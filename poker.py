@@ -56,12 +56,15 @@ def value(card):
 # Sort cards by card rank -- I'm working on it
 def sortCards(values):
 	sortedValues = []
-	for '2' in values:
-		sortedValues.append('2')
-	for '3' in values:
-		sortedValues.append('3')
-	for '4' in values:
-		sortedValues.append('4')
+	for val in values:
+		if val is '2':
+			sortedValues.append('2')
+		if val is '3':
+			sortedValues.append('3')
+		if val is '4':
+			sortedValues.append('4')
+	return sortedValues
+
 
 
 
