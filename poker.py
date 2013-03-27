@@ -1,3 +1,5 @@
+import random
+
 cards = [[1, 'c'],[1, 'd'],[1, 'h'],[1,'s'],
 		 [2, 'c'],[2, 'd'],[2, 'h'],[2,'s'],
 		 [3, 'c'],[3, 'd'],[3, 'h'],[3,'s'],
@@ -16,6 +18,9 @@ hand_hierarchy = ['royal flush','straight flush','four of a kind','full house',
 				  'flush','straight','three of a kind','two pair','one pair',
 				  'high card']
 
+agent_hand 		= []
+player_hand  	= []
+
 def suit(card):
 	return card[1]
 
@@ -33,9 +38,49 @@ def isStraight(hand):
 	for card in hand:
 		values.append(value(card))
 	values.sort()
+	start = values[0] - 1
+	for value in values:
+		if (start = 1) and (value = 14)
+		if (value != start):
+			return false
+		else
+			start = start + 1
+
+def isSet(numberOfSame, hand):
+
+def sets(hand):
+	amounts = {
+	for card in hand:
+
+
 
 def isRoyalFlush(hand):
 	if isFlush(hand):
 		if isStraight(hand):
 
+def dealHand(numberOfCards):
+	return random.sample(cards, numberOfCards)
 
+def deal(numberOfCards):
+	agent_hand = dealHand(numberOfCards)
+	player_hand = dealHand(numberOfCards)
+
+def handRank(hand):
+	if   isRoyalFlush(hand):
+		return 0
+	elif (isStraight(hand) and isFlush(hand)):
+		return 1
+	elif ifSet(4,hand):
+		return 2
+	elif 
+
+
+
+#import random
+#import itertools
+#SUITS = 'cdhs'
+# RANKS = '23456789TJQKA'
+#DECK = tuple(''.join(card) for card in itertools.product(RANKS, SUITS))
+#hand = random.sample(DECK, 5)
+#print hand
+#['Kh', 'Kc', '6c', '7d', '3d']
