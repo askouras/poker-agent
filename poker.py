@@ -55,18 +55,15 @@ def value(card):
 
 # Sort cards by card rank -- I'm working on it
 def sortCards(values):
+	vals = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
+	ranks = []
+	for value in values:
+		ranks.append(vals.index(value))
+		ranks.sort()
 	sortedValues = []
-	for val in values:
-		if val is '2':
-			sortedValues.append('2')
-		if val is '3':
-			sortedValues.append('3')
-		if val is '4':
-			sortedValues.append('4')
+	for rank in ranks:
+		sortedValues.append(vals[rank])
 	return sortedValues
-
-
-
 
 # Determine if given hand is a flush (all have the same suit)
 def isFlush(hand):
@@ -89,6 +86,7 @@ def isFlush(hand):
 
 
 # Determine if given hand is a straight (a run of 5)
+"""
 def isStraight(hand):
 	values = []
 	for card in hand:
@@ -96,7 +94,7 @@ def isStraight(hand):
 	values = sortCards(values)
 
 	low = lowCard(hand)
-"""
+
 	start = values[0] - 1
 	for value in values:
 		if value != start + 1:
@@ -107,6 +105,24 @@ def isStraight(hand):
 		else
 			start = start + 1
 """
+
+def isStraight(hand):
+	values = []
+	for card in hand:
+		values.append(value(card))
+	values = sortCards(values)
+	
+	if (('A' in values) and ('2' in values) and ('3' in values)
+	and ('4' in values) and ('5' in values)):
+		return True
+	elif len(values) > len(set(values)):
+		low = values.index(lowCard(hand))
+		rangeUp = range(low,low + 5)
+		ranks = []
+		for val in values:
+			ranks.append(vals.index(val))
+		ranks.sort()
+		return ranks == rangeUp
 
 # Determine if given hand is a royal flush (suited [10,J,Q,K,A])
 def isRoyalFlush(hand):
