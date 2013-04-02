@@ -25,10 +25,15 @@ def addPlayers(numberOfPlayers):
 		players.append([])
 		players_money.append(100)
 
+
+# Shuffle the deck
+def shuffle(deck):
+	random.shuffle(deck)
+
 # Deal to each player
 def deal(numberOfCards):
 	for i in range(numberOfCards):
-		for player in players
+		for player in players:
 			player.append(deck.pop())
 
 # All players ante up (add ante to the pot)
@@ -61,7 +66,7 @@ def lowCard(hand):
 	values = sortCards(values)
 	return values[0]
 
-# Sort cards by card rank -- I'm working on it
+# Sort cards by card rank
 def sortCards(values):
 	vals = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
 	ranks = []
@@ -75,45 +80,12 @@ def sortCards(values):
 
 # Determine if given hand is a flush (all have the same suit)
 def isFlush(hand):
-"""
-	amountsSuits = {}
-	for suit in suits:
-		amountsSuits[suit] = 0
-	for card in hand:
-		amountsSuits[suit(card)] = amountsSuits[suit(card)] + 1
-	flushSets = []
-	for item in amountsSuits:
-		flushSets.append(amountsSuits[item])
-	flushSets.sort()
-	return 5 in flushSets
-"""
 	suits = set ()
 	for card in hand:
 		suits.add(suit(card))
 	return len(suits) = 1
 
-
 # Determine if given hand is a straight (a run of 5)
-"""
-def isStraight(hand):
-	values = []
-	for card in hand:
-		values.append(value(card))
-	values = sortCards(values)
-
-	low = lowCard(hand)
-
-	start = values[0] - 1
-	for value in values:
-		if value != start + 1:
-
-		if (start = 1) and (value = 14)
-		if (value != start):
-			return false
-		else
-			start = start + 1
-"""
-
 def isStraight(hand):
 	values = []
 	for card in hand:
@@ -138,7 +110,26 @@ def isRoyalFlush(hand):
 
 # Determine if given hand is both a straight and a flush
 def isStraightFlush(hand):
-	return isStraight(hand) and isFlush(hand)
+	if isStraight(hand) and isFlush(hand):
+		values = []
+		for card in hand:
+			values.append(value(card))
+		values = sortCards(values)
+		return values
+
+# Find the sets of a hand and return a sorted list with the number of 
+#   occurances of each card
+def sets(hand):
+	amountsVals = {}
+	for val in vals:
+		amountsVals[val] = 0
+	for card in hand:
+		amountsVals[value(card)] += 1
+	valueSets = []
+	for item in amountsVals:
+		valueSets.append(amountsVals[item])
+	valueSets.sort()
+	return valueSets
 
 # Determine if given hand has a set of given size 
 #  (if first argument is 2, will return true if the hand has a pair)
@@ -163,24 +154,6 @@ def highCard(hand):
 	values = sortCards(values)
 	return values[-1]
 
-# Find the sets of a hand and return a sorted list with the number of 
-#   occurances of each card
-def sets(hand):
-	amountsVals = {}
-	for val in vals:
-		amountsVals[val] = 0
-	for card in hand:
-		amountsVals[value(card)] += 1
-	valueSets = []
-	for item in amountsVals:
-		valueSets.append(amountsVals[item])
-	valueSets.sort()
-	return valueSets
-
-# Shuffle the deck
-def shuffle():
-	random.shuffle(cards)
-
 # Get the rank of the hand (a lower number is a better hand)
 def handRank(hand):
 	if   isRoyalFlush(hand):
@@ -201,11 +174,20 @@ def handRank(hand):
 		return 7
 	elif hasSet(2,hand):
 		return 8
-	else return 9 # later will find out what the high card is (when needed)
+	else:
+		return 9 # later will find out what the high card is (when needed)
 
 def whoWon():
 	player_ranks = []
 	for player in players:
 		player_ranks.append(handRank(player))
+	bestHand = min(player_ranks)
+	
+	playersWithBestHand = []
+	counter = 0
+	while counter < len(player_ranks):
+		player_ranks[counter] = bestHand:
+			playersWithBestHand.append(counter)
+	return playersWithBestHand
 
 def gameOver():
