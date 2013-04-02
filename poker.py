@@ -39,8 +39,8 @@ def deal(numberOfCards):
 # All players ante up (add ante to the pot)
 def ante():
 	for player_money in players_money:
-		player_money -= 5
-		pot += 5
+		player_money -= 10
+		pot += 10
 
 # Setup deck and deal hands to each player
 def startGame():
@@ -76,14 +76,14 @@ def sortCards(values):
 	sortedValues = []
 	for rank in ranks:
 		sortedValues.append(vals[rank])
-	return sortedValues]
+	return sortedValues
 
 # Determine if given hand is a flush (all have the same suit)
 def isFlush(hand):
 	suits = set ()
 	for card in hand:
 		suits.add(suit(card))
-	return len(suits) = 1
+	return len(suits) == 1
 
 # Determine if given hand is a straight (a run of 5)
 def isStraight(hand):
@@ -142,9 +142,9 @@ def hasTwoPair(hand):
 	setses = sets(hand)
 	pairs = 0
 	for setse in setses:
-		if setse = 2
+		if setse == 2:
 			pairs += 1
-	return pairs = 2
+	return pairs == 2
 
 # Determine the hand's high card
 def highCard(hand):
