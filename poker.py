@@ -53,6 +53,14 @@ def suit(card):
 def value(card):
 	return card[0]
 
+# Determine the hand's low card
+def lowCard(hand):
+	values = []
+	for card in hand:
+		values.append(value(card))
+	values = sortCards(values)
+	return values[0]
+
 # Sort cards by card rank -- I'm working on it
 def sortCards(values):
 	vals = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
@@ -63,7 +71,7 @@ def sortCards(values):
 	sortedValues = []
 	for rank in ranks:
 		sortedValues.append(vals[rank])
-	return sortedValues
+	return sortedValues]
 
 # Determine if given hand is a flush (all have the same suit)
 def isFlush(hand):
@@ -115,8 +123,8 @@ def isStraight(hand):
 	if (('A' in values) and ('2' in values) and ('3' in values)
 	and ('4' in values) and ('5' in values)):
 		return True
-	elif len(values) > len(set(values)):
-		low = values.index(lowCard(hand))
+	else:
+		low = vals.index(lowCard(hand))
 		rangeUp = range(low,low + 5)
 		ranks = []
 		for val in values:
@@ -146,14 +154,6 @@ def hasTwoPair(hand):
 		if setse = 2
 			pairs += 1
 	return pairs = 2
-
-# Determine the hand's low card
-def lowCard(hand):
-	values = []
-	for card in hand:
-		values.append(value(card))
-	values = sortCards(values)
-	return values[0]
 
 # Determine the hand's high card
 def highCard(hand):
