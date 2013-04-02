@@ -2,7 +2,7 @@ import random
 
 # The possible suits and card values
 suits = ['c','d','h','s']
-vals  = ['2,','3','4','5','6','7','8','9','10','J','Q','K','A']
+vals  = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
 
 # Where player[0] is the agent
 players = []
@@ -11,13 +11,13 @@ players_money = []
 
 pot = 0
 
+deck = []
+
 # Create deck by combining suits and vals and adding to a list
 def fillDeck():
-	deck = []
 	for suit in suits:
 		for val in vals:
 			deck.append([val,suit])
-	return deck
 
 # Add players to be dealth into game
 def addPlayers(numberOfPlayers):
@@ -27,7 +27,7 @@ def addPlayers(numberOfPlayers):
 
 
 # Shuffle the deck
-def shuffle(deck):
+def shuffle():
 	random.shuffle(deck)
 
 # Deal to each player
@@ -40,12 +40,13 @@ def deal(numberOfCards):
 def ante():
 	for player_money in players_money:
 		player_money -= 10
+		global pot
 		pot += 10
 
 # Setup deck and deal hands to each player
 def startGame():
-	deck = fillDeck()
-	shuffle(deck)
+	fillDeck()
+	shuffle()
 	addPlayers(2)
 	ante()
 	deal(5)
