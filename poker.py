@@ -38,18 +38,22 @@ def deal(numberOfCards):
 
 # All players ante up (add ante to the pot)
 def ante():
+	global players_money
 	for player_money in players_money:
-		player_money -= 10
+		oldmoney = player_money
+		player_money = oldmoney - 10
 		global pot
 		pot += 10
 
 # Setup deck and deal hands to each player
-def startGame():
+def startHand():
 	fillDeck()
 	shuffle()
 	addPlayers(2)
 	ante()
 	deal(5)
+	startOpponent()
+	startAgent()
 
 # Get the suit of a given card
 def suit(card):
@@ -187,8 +191,12 @@ def whoWon():
 	playersWithBestHand = []
 	counter = 0
 	while counter < len(player_ranks):
-		player_ranks[counter] = bestHand:
-			playersWithBestHand.append(counter)
-	return playersWithBestHand
+		player_ranks[counter] = bestHand
+		playersWithBestHand.append(counter)
+		counter += 1
+	payOut = pot/len(playersWithBestHand)
+	for player in playersWithBestHand:
+		players_money[player] += payOut
+	pot = 0
 
 def gameOver():
