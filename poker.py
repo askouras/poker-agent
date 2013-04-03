@@ -78,7 +78,7 @@ def checkPlayers():
 			outPlayers.append(counter)
 		counter += 1
 	counter2 = 0
-	while counter2 < len(outPlayers)
+	while counter2 < len(outPlayers):
 		players_money.pop(outPlayers[counter2])
 		inGame[outPlayers[counter2]] = False
 		counter += 1
@@ -90,25 +90,25 @@ def startOpponent():
 	rank = handRank(players[index])
 	# Raise if hand is a straight or better
 	if rank < 6:
-		raised()
+		raised(index)
 		actions.insert(index,'raised')
-		print "Player " + index + " has raised"
-	else
+		print "Player " + str(index) + " has raised"
+	else:
 		actions.insert(index,'stayed')
-		print "Player " + index + " has stayed"
+		print "Player " + str(index) + " has stayed"
 
 def startAgent():
 	global actions
 	index = 0
 	rank = handRank(players[index])
-	if 'raised' in actions
+	if 'raised' in actions:
 		if rank < 8:
-			raised()
+			raised(index)
 			actions.insert(index,'raised')
-			print "Player " + index + " has raised"
-		else
+			print "Player " + str(index) + " has raised"
+		else:
 			actions.insert(index,'stayed')
-			print "Player " + index + " has stayed"
+			print "Player " + str(index) + " has stayed"
 
 
 def remember():
@@ -116,7 +116,14 @@ def remember():
 
 # Setup deck and deal hands to each player
 def startHand():
+	global actions
+	global players
+	global deck
+	global pot
 	actions = []
+	players = []
+	deck = []
+	pot = 0
 	checkPlayers()
 	fillDeck()
 	shuffle()
@@ -270,6 +277,5 @@ def whoWon():
 	payOut = pot/len(playersWithBestHand)
 	for player in playersWithBestHand:
 		players_money[player] += payOut
-	pot = 0
 
 #def gameOver():
