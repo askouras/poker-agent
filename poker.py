@@ -35,8 +35,11 @@ def fillDeck():
 
 # Add players to be dealth into game
 def addPlayers(numberOfPlayers):
-	for i  in range(numberOfPlayers):
+	for i in range(numberOfPlayers):
 		players.append([])
+
+def addPlayersStart(numberP):
+	for i in range(numberP):
 		players_money.append(100)
 		inHand.append(True)
 		inGame.append(True)
@@ -59,18 +62,23 @@ def ante():
 	for player_money in players_money:
 		pot += 10
 		player_money -= 10
+	print "All players have added 10 credits to the pot for the ante"
 
 # Player raise
 def raised(player_index):
 	global pot
 	global players_money
+	global actions
 	pot += 10
 	players_money[player_index] -= 10
+	actions.insert(player_index,'raised')
+	print "Player " + str(player_index) + " has raised"
 
 # Remove players from list if they have run out of money
 def checkPlayers():
 	global players_money
 	global inGame
+	global players
 	outPlayers = []
 	counter = 0
 	while counter < len(players_money):
@@ -79,20 +87,20 @@ def checkPlayers():
 		counter += 1
 	counter2 = 0
 	while counter2 < len(outPlayers):
-		players_money.pop(outPlayers[counter2])
 		inGame[outPlayers[counter2]] = False
 		counter += 1
 
-# Start opponent(s)
-def startOpponent():
+# If agent raises (after opponents stayed), force opponents to raise or fold
+def forceResponse():
 	global actions
-	index = 1
+
+# Start opponent(s)
+def startOpponent(index):
+	global actions
 	rank = handRank(players[index])
 	# Raise if hand is a straight or better
 	if rank < 6:
 		raised(index)
-		actions.insert(index,'raised')
-		print "Player " + str(index) + " has raised"
 	else:
 		actions.insert(index,'stayed')
 		print "Player " + str(index) + " has stayed"
@@ -101,18 +109,32 @@ def startAgent():
 	global actions
 	index = 0
 	rank = handRank(players[index])
+	# Did the opponents raise?
 	if 'raised' in actions:
+		# Agent has better than a pair, raise
 		if rank < 8:
 			raised(index)
-			actions.insert(index,'raised')
-			print "Player " + str(index) + " has raised"
+		# Otherwise stay/fold
 		else:
 			actions.insert(index,'stayed')
+			inHand[index] = False
+			print "Player " + str(index) + " has folded"
+	else:
+		if rank < 6:
+			raised(index)
+			inHand[1] = False
+		else:
 			print "Player " + str(index) + " has stayed"
-
 
 def remember():
 	knowledgeBaseActions.append(actions)
+
+def startGame():
+	addPlayersStart(2)
+	while not gameOver():
+		startHand()
+	if gameOver():
+		whoWonGame()
 
 # Setup deck and deal hands to each player
 def startHand():
@@ -124,16 +146,17 @@ def startHand():
 	players = []
 	deck = []
 	pot = 0
+	addPlayers(2)
 	checkPlayers()
 	fillDeck()
 	shuffle()
-	addPlayers(2)
 	ante()
 	deal(5)
-	startOpponent()
+	startOpponent(1)
 	startAgent()
 	whoWon()
 	remember()
+	print players_money
 
 # Get the suit of a given card
 def suit(card):
@@ -176,9 +199,8 @@ def isStraight(hand):
 	for card in hand:
 		values.append(value(card))
 	values = sortCards(values)
-	
 	if (('A' in values) and ('2' in values) and ('3' in values)
-	and ('4' in values) and ('5' in values)):
+						and ('4' in values) and ('5' in values)):
 		return True
 	else:
 		low = vals.index(lowCard(hand))
@@ -278,4 +300,24 @@ def whoWon():
 	for player in playersWithBestHand:
 		players_money[player] += payOut
 
-#def gameOver():
+# Figure out is over, if over, print winner
+def gameOver():
+	checkPlayers()
+	playersLeft = 0
+	for True in inGame:
+		playersLeft += 1
+	if playersLeft == 1:
+		return True
+	else:
+		return False
+
+def whoWonGame():
+	playersLeft = 0
+	for True in inGame:
+		playersLeft += 1
+		print playersLeft
+	if playersLeft == 1:
+		winner = inGame.index(True)
+		print "Player " + str(winner) + " has won the game with " + str(players_money[winner]) + " credits"
+
+startGame()
