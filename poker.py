@@ -188,7 +188,6 @@ def whoWon():
 	for player in players:
 		player_ranks.append(handRank(player))
 	bestHand = min(player_ranks)
-	
 	playersWithBestHand = []
 	counter = 0
 	while counter < len(player_ranks):
