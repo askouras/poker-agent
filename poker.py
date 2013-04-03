@@ -26,6 +26,10 @@ knowledgeBaseActions = []
 result = []
 # Keeps track of previous payouts
 knowledgeBasePayouts = []
+# Holds the actions the opponent makes - raise or stay
+opponentHistory = []
+# Holds the [[agents hand rank], [agents play], [opponents play]]
+agentHistory =[[],[],[]]
 
 # Create deck by combining suits and vals and adding to a list
 def fillDeck():
@@ -126,9 +130,80 @@ def startAgent():
 		else:
 			print "Player " + str(index) + " has stayed"
 
+
+# Get the rank of the hand (a lower number is a better hand)
+def handRank(hand):
+	if   isRoyalFlush(hand):
+		return 0
+	elif isStraightFlush(hand):
+		return 1
+	elif hasSet(4,hand):
+		return 2
+	elif (hasSet(3,hand) and hasSet(2,hand)):
+		return 3
+	elif  isFlush(hand):
+		return 4
+	elif isStraight(hand):
+		return 5
+	elif hasSet(3,hand):
+		return 6
+	elif hasTwoPair(hand):
+		return 7
+	elif hasSet(2,hand):
+		return 8
+	else:
+		return 9 # later will find out what the high card is (when needed)
+
+"""
+#Raise function
+def raiseAmount(10):
+    global players_money
+    global pot
+    players_money = [player_money - 10 for player_money in players_money]
+    for player_money in players_money:
+        pot += 10
+            player_money -= 10
+return "raise"
+"""
+
+#************ to stay ************#
+def stay():
+    global players_money
+    global pot
+    players_money = [player_money - 0 for player_money in players_money]
+    for player_money in players_money:
+        pot += 0
+        player_money -= 0
+    return "stay"
+
+# OpponentPlay function 
+def opponentPlay():
+    handR = handRank(hand)
+    if handR <= 5:
+        opponentPlays = raiseAmount(10)
+        opponentHistory.append([opponentPlays])
+        return OpponentPlays
+    else:
+        opponentPlays = stay()
+        opponentHistory.append([opponentPlays])
+        return opponentPlays
+
+# Agent Play function
+def agentPlay():
+    handR = handRank(hand)
+    if handR <= 3:
+        agentPlay = raiseAmount(10)
+        opponentPlays = oppontentPlay()
+        agentHistory.append([handR, agentPlay, opponentPlays])
+    else:
+        agentPlay = stay()
+        playHistory.append([handR, agentPlay])
+
+# Remember function
 def remember():
 	knowledgeBaseActions.append(actions)
 
+# Start game function
 def startGame():
 	addPlayersStart(2)
 	while not gameOver():
@@ -260,29 +335,6 @@ def highCard(hand):
 		values.append(value(card))
 	values = sortCards(values)
 	return values[-1]
-
-# Get the rank of the hand (a lower number is a better hand)
-def handRank(hand):
-	if   isRoyalFlush(hand):
-		return 0
-	elif isStraightFlush(hand):
-		return 1
-	elif hasSet(4,hand):
-		return 2
-	elif (hasSet(3,hand) and hasSet(2,hand)):
-		return 3
-	elif  isFlush(hand):
-		return 4
-	elif isStraight(hand):
-		return 5
-	elif hasSet(3,hand):
-		return 6
-	elif hasTwoPair(hand):
-		return 7
-	elif hasSet(2,hand):
-		return 8
-	else:
-		return 9 # later will find out what the high card is (when needed)
 
 def whoWon():
 	global pot
