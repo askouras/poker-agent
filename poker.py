@@ -94,14 +94,25 @@ def startOpponent():
 		actions.insert(index,'raised')
 		print "Player " + index + " has raised"
 	else
+		actions.insert(index,'stayed')
 		print "Player " + index + " has stayed"
 
 def startAgent():
 	global actions
 	index = 0
+	rank = handRank(players[index])
+	if 'raised' in actions
+		if rank < 8:
+			raised()
+			actions.insert(index,'raised')
+			print "Player " + index + " has raised"
+		else
+			actions.insert(index,'stayed')
+			print "Player " + index + " has stayed"
+
 
 def remember():
-	knowledgeBase.append(actions)
+	knowledgeBaseActions.append(actions)
 
 # Setup deck and deal hands to each player
 def startHand():
