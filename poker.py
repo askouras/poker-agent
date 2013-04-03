@@ -39,11 +39,10 @@ def deal(numberOfCards):
 # All players ante up (add ante to the pot)
 def ante():
 	global players_money
+	global pot
 	for player_money in players_money:
-		oldmoney = player_money
-		player_money = oldmoney - 10
-		global pot
 		pot += 10
+		player_money -= 10
 
 # Setup deck and deal hands to each player
 def startHand():
@@ -52,8 +51,8 @@ def startHand():
 	addPlayers(2)
 	ante()
 	deal(5)
-	startOpponent()
-	startAgent()
+	#startOpponent()
+	#startAgent()
 
 # Get the suit of a given card
 def suit(card):
@@ -140,7 +139,7 @@ def sets(hand):
 #  (if first argument is 2, will return true if the hand has a pair)
 def hasSet(numberOfSame, hand):
 	if (numberOfSame in sets(hand)):
-		return true
+		return True
 
 # Determine if given hand contains two pairs (i.e. [2,2,6,7,7])
 def hasTwoPair(hand):
@@ -183,6 +182,7 @@ def handRank(hand):
 		return 9 # later will find out what the high card is (when needed)
 
 def whoWon():
+	global pot
 	player_ranks = []
 	for player in players:
 		player_ranks.append(handRank(player))
@@ -191,12 +191,12 @@ def whoWon():
 	playersWithBestHand = []
 	counter = 0
 	while counter < len(player_ranks):
-		player_ranks[counter] = bestHand
-		playersWithBestHand.append(counter)
+		if player_ranks[counter] == bestHand:
+			playersWithBestHand.append(counter)
 		counter += 1
 	payOut = pot/len(playersWithBestHand)
 	for player in playersWithBestHand:
 		players_money[player] += payOut
 	pot = 0
 
-def gameOver():
+#def gameOver():
