@@ -40,6 +40,7 @@ def deal(numberOfCards):
 def ante():
 	global players_money
 	global pot
+	players_money = [player_money - 10 for player_money in players_money]
 	for player_money in players_money:
 		pot += 10
 		player_money -= 10
