@@ -6,12 +6,26 @@ vals  = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
 
 # Where player[0] is the agent
 players = []
-
+# Keeps track of previous hands
+knowledgeBaseHands = []
+# How much money each player has
 players_money = []
-
+# Amount of money in the pot
 pot = 0
-
+# The cards in the deck
 deck = []
+# Keeps track of who folded
+inHand = []
+# Keeps track of who's still playing
+inGame = []
+# Keeps track of what each player did in the hand
+actions = []
+# Keeps track of previous moves
+knowledgeBaseActions = []
+# Track the payout
+result = []
+# Keeps track of previous payouts
+knowledgeBasePayouts = []
 
 # Create deck by combining suits and vals and adding to a list
 def fillDeck():
@@ -24,7 +38,8 @@ def addPlayers(numberOfPlayers):
 	for i  in range(numberOfPlayers):
 		players.append([])
 		players_money.append(100)
-
+		inHand.append(True)
+		inGame.append(True)
 
 # Shuffle the deck
 def shuffle():
@@ -45,15 +60,62 @@ def ante():
 		pot += 10
 		player_money -= 10
 
+# Player raise
+def raised(player_index):
+	global pot
+	global players_money
+	pot += 10
+	players_money[player_index] -= 10
+
+# Remove players from list if they have run out of money
+def checkPlayers():
+	global players_money
+	global inGame
+	outPlayers = []
+	counter = 0
+	while counter < len(players_money):
+		if players_money[counter] == 0:
+			outPlayers.append(counter)
+		counter += 1
+	counter2 = 0
+	while counter2 < len(outPlayers)
+		players_money.pop(outPlayers[counter2])
+		inGame[outPlayers[counter2]] = False
+		counter += 1
+
+# Start opponent(s)
+def startOpponent():
+	global actions
+	index = 1
+	rank = handRank(players[index])
+	# Raise if hand is a straight or better
+	if rank < 6:
+		raised()
+		actions.insert(index,'raised')
+		print "Player " + index + " has raised"
+	else
+		print "Player " + index + " has stayed"
+
+def startAgent():
+	global actions
+	index = 0
+
+def remember():
+	knowledgeBase.append(actions)
+
 # Setup deck and deal hands to each player
 def startHand():
+	actions = []
+	checkPlayers()
 	fillDeck()
 	shuffle()
 	addPlayers(2)
 	ante()
 	deal(5)
-	#startOpponent()
-	#startAgent()
+	startOpponent()
+	startAgent()
+	whoWon()
+	remember()
 
 # Get the suit of a given card
 def suit(card):
