@@ -129,6 +129,14 @@ def startAgent():
 		else:
 			print "Player " + str(index) + " has stayed"
 
+# The first card in the hand is the hidden card
+
+# The cards after the first card are all visible to all players
+def visibleCards(player):
+	visibleOpponent = []
+	playersOpponents = players[player]
+	for opponents in playersOpponents:
+		visibleOpponent.append(opponent[1:])
 
 # Get the rank of the hand (a lower number is a better hand)
 def handRank(hand):
@@ -209,6 +217,36 @@ def startGame():
 		startHand()
 	if gameOver():
 		whoWonGame()
+		
+# In the first round, deal two cards to each player, the first is hidden to all other players
+#  the subsequent cards are all visible to all players
+#  In all other rounds, deal one card to each player (visible)
+#  Start a round of betting
+def bets():
+	agentsVisible = visibleCards(0)
+	opponentsVisible = visibleCards(1)
+	# See who goes first this round, based on the person with the best visible cards
+	#  On first round, person with highest card starts the round of bets
+	if len(players[0]) == 1:
+		highAgent = vals.index(lowCard(agentsVisible))
+		highOpponent = vals.index(lowCard(opponentsVisible))
+		if highAgent > highOpponent:
+			print "Agent's hand: " + str(players[0])
+			startAgent()
+		else:
+			print "Opponent's hand: " + str(players[1])
+			startOpponent(1)
+	else:
+		agentRank = handRank(agentsVisible)
+		opponentRank = handRank(opponentVisible)
+		if agentRank > opponentRank:
+			print "Agent's hand: " + str(players[0])
+			startAgent()
+		if opponentRank > agentRank:
+			print "Opponent's hand: " + str(players[1])
+			startOpponent(1)
+		else:
+			whoGoes = compareSameHands()
 
 # Setup deck and deal hands to each player
 def startHand():
@@ -225,11 +263,14 @@ def startHand():
 	fillDeck()
 	shuffle()
 	ante()
-	deal(5)
-	print "Opponent's hand: " + str(players[1])
-	startOpponent(1)
-	print "Agent's hand: " + str(players[0])
-	startAgent()
+	deal(2)
+	bets()
+	deal(1)
+	bets()
+	deal(1)
+	bets()
+	deal(1)
+	# All bets are in, figure out who won
 	whoWon()
 	remember()
 	print players_money
