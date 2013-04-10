@@ -66,7 +66,6 @@ def ante():
 	for player_money in players_money:
 		pot += 10
 		player_money -= 10
-	print "All players have added 10 credits to the pot for the ante"
 
 # Player raise
 def raised(player_index):
@@ -182,7 +181,7 @@ def opponentPlay():
     if handR <= 5:
         opponentPlays = raiseAmount(10)
         opponentHistory.append([opponentPlays])
-        return OpponentPlays
+        return opponentPlays
     else:
         opponentPlays = stay()
         opponentHistory.append([opponentPlays])
@@ -227,7 +226,9 @@ def startHand():
 	shuffle()
 	ante()
 	deal(5)
+	print "Opponent's hand: " + str(players[1])
 	startOpponent(1)
+	print "Agent's hand: " + str(players[0])
 	startAgent()
 	whoWon()
 	remember()
@@ -314,7 +315,7 @@ def sets(hand):
 	return valueSets
 
 def unsortedSets(hand):
-		amountsVals = {}
+	amountsVals = {}
 	for val in vals:
 		amountsVals[val] = 0
 	for card in hand:
@@ -393,7 +394,7 @@ def bestStraight():
 	if high2 > high1:
 		return 1
 	else:
-		return 2
+		return 5
 
 # Determine which player has the better four of a kind
 def bestFourOfAKind():
@@ -413,8 +414,9 @@ def bestFourOfAKind():
 		if playerTwosKicker > playerOnesKicker:
 			return 1
 		else:
-			return 2
+			return 5
 
+# Determine who has the best full house
 def bestFullHouse():
 	sets1 = unsortedSets(players[0])
 	sets2 = unsortedSets(players[1])
@@ -432,7 +434,7 @@ def bestFullHouse():
 		if playerTwosTwo > playerOnesTwo:
 			return 1
 		else:
-			return 2
+			return 5
 
 # Determine who has the best flush
 def bestCards():
@@ -458,26 +460,26 @@ def bestCards():
 		else:
 			thirdBest1 = thirdHighestCard(players[0])
 			thirdBest2 = thirdHighestCard(players[1])
-				if thirdBest1 > thirdBest2:
+			if thirdBest1 > thirdBest2:
+				return 0
+			if thirdBest2 > thirdBest1:
+				return 1
+			else:
+				fourthBest1 = fourthHighestCard(players[0])
+				fourthBest2 = fourthHighestCard(players[1])
+				if fourthBest1 > fourthBest2:
 					return 0
-				if thirdBest2 > thirdBest1:
+				if fourthBest2 > fourthBest1:
 					return 1
 				else:
-					fourthBest1 = fourthHighestCard(players[0])
-					fourthBest2 = fourthHighestCard(players[1])
-					if fourthBest1 > fourthBest2:
+					low1 = lowCard(players[0])
+					low2 = lowCard(players[1])
+					if low1 > low2:
 						return 0
-					if fourthBest2 > fourthBest1:
+					if low2 > low1:
 						return 1
 					else:
-						low1 = lowCard(players[0])
-						low2 = lowCard(players[1])
-						if low1 > low2:
-							return 0
-						if low2 > low1:
-							return 1
-						else:
-							return 2
+						return 5
 
 # Determine who has the best three of a kind
 def bestThreeOfAKind():
@@ -501,7 +503,7 @@ def bestThreeOfAKind():
 		if high1 > high2:
 			return 0
 		if high2 > high1:
-			return 0
+			return 1
 		else:
 			secondHighest1 = secondHighestCard(players[0])
 			secondHighest2 = secondHighestCard(players[1])
@@ -514,7 +516,79 @@ def bestThreeOfAKind():
 			if secondHighest2 > secondHighest1:
 				return 1
 			else:
-				return 2
+				return 5
+
+def bestTwoPair():
+	sets1 = unsortedSets(players[0])
+	sets2 = unsortedSets(players[1])
+	playerOnesSet = sets1.index(2)
+	playerTwosSet = sets2.index(2)
+	playerOnesPair = sets1.index(2,playerOnesSet + 1)
+	playerTwosPair = sets2.index(2,playerTwosSet + 1)
+	playerOnesSingle = sets1.index(1)
+	playerTwosSingle = sets2.index(1)
+	if 	((playerOnesSet > playerTwosSet) or (playerOnesSet > playerTwosPair) 
+										or (playerOnesPair > playerTwosSet) 
+										or (playerOnesPair > playerTwosPair)):
+		return 0
+	if 	((playerOnesSet < playerTwosSet) or (playerOnesSet < playerTwosPair) 
+										or (playerOnesPair < playerTwosSet) 
+										or (playerOnesPair < playerTwosPair)):
+		return 1
+	else:
+		if playerOnesSingle > playerTwosSingle:
+			return 0
+		if playerTwosSingle > playerOnesSingle:
+			return 1
+		else:
+			return 5
+
+
+# Determine who has the best pair
+def bestPair():
+	sets1 = unsortedSets(players[0])
+	sets2 = unsortedSets(players[1])
+	playerOnesSet = sets1.index(2)
+	playerTwosSet = sets2.index(2)
+	if playerOnesSet > playerTwosSet:
+		return 0
+	if playerTwosSet > playerOnesSet:
+		return 1
+	else:
+		high1 = highCard(players[0])
+		high2 = highCard(players[1])
+		if high1 == playerOnesSet:
+			high1 = secondHighestCard(players[0])
+		if high2 == playerTwosSet:
+			high2 == secondHighestCard(players[1])
+		if high1 > high2:
+			return 0
+		if high2 > high1:
+			return 1
+		else:
+			secondHighest1 = secondHighestCard(players[0])
+			secondHighest2 = secondHighestCard(players[1])
+			if secondHighest1 == high1:
+				secondHighest1 = thirdHighestCard(players[0])
+			if secondHighest2 == high2:
+				secondHighest2 = thirdHighestCard(players[1])
+			if secondHighest1 > secondHighest2:
+				return 0
+			if secondHighest2 > secondHighest1:
+				return 1
+			else:
+				thirdHighest1 = thirdHighestCard(players[0])
+				thirdHighest2 = thirdHighestCard(players[1])
+				if thirdHighest1 == high1:
+					thirdHighest1 = fourthHighestCard(players[0])
+				if thirdHighest2 == high2:
+					thirdHighest2 = fourthHighestCard(players[1])
+				if thirdHighest1 > thirdHighest2:
+					return 0
+				if thirdHighest2 > thirdHighest1:
+					return 1
+				else:
+					return 5
 
 # Determine who won this hand, and divvy up the pot accordingly
 def whoWon():
@@ -531,7 +605,7 @@ def whoWon():
 		counter += 1
 	# If more than one player has the best hand, find out whose hand is better
 	# No comparison needed for Royal Flushes
-	if counter > 1:
+	if len(playersWithBestHand) == 2:
 		# Who has the better straight
 		if (bestHand == 1) or (bestHand == 5):
 			# Only change the list if one of them actually has a better straight
@@ -545,19 +619,54 @@ def whoWon():
 		if (bestHand == 3):
 			if (bestFullHouse() == 0) or (bestFullHouse() == 1):
 				playersWithBestHand = [bestFullHouse()]
-		# Who has the better flush
-		if (bestHand == 4):
+		# Who has the better flush or better high card
+		if (bestHand == 4) or (bestHand == 9):
 			if (bestCards() == 0) or (bestCards() == 1):
 				playersWithBestHand = [bestCards()]
+		# Who has the better three of a kind
 		if (bestHand == 6):
+			if (bestThreeOfAKind() == 0) or (bestThreeOfAKind() == 1):
+				playersWithBestHand = [bestThreeOfAKind()]
+		# Who has the better two pair
+		if (bestHand == 7):
+			if (bestTwoPair() == 0) or (bestTwoPair() == 1):
+				playersWithBestHand = [bestTwoPair()]
+		# Who has the better pair
+		if (bestHand == 8):
+			if (bestPair() == 0) or (bestPair() == 1):
+				playersWithBestHand = [bestPair()]
 
-
-
-
+	if bestHand == 0:
+		hand = "royal flush"
+	if bestHand == 1:
+		hand = "straight flush"
+	if bestHand == 2:
+		hand = "four of a kind"
+	if bestHand == 3:
+		hand = "full house"
+	if bestHand == 4:
+		hand = "flush"
+	if bestHand == 5:
+		hand = "straight"
+	if bestHand == 6:
+		hand = "three of a kind"
+	if bestHand == 7:
+		hand = "two pair"
+	if bestHand == 8:
+		hand = "one pair"
+	if bestHand == 9:
+		hand = "high card"
 	# Split the pot amongst the players with the best hand
 	payOut = pot/len(playersWithBestHand)
 	for player in playersWithBestHand:
 		players_money[player] += payOut
+		if len(playersWithBestHand) == 1:
+			print "Player " + str(playersWithBestHand[0]) + " has won the hand with a " + hand
+		else:
+			winners = ""
+			for player in playersWithBestHand:
+				winners += player + " and "
+			print "Players " + winners + " each have a " + hand + " and have split the pot evenly"
 
 # Figure out is over, if over, print winner
 def gameOver():
