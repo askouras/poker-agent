@@ -313,6 +313,17 @@ def sets(hand):
 	valueSets.sort()
 	return valueSets
 
+def unsortedSets(hand):
+		amountsVals = {}
+	for val in vals:
+		amountsVals[val] = 0
+	for card in hand:
+		amountsVals[value(card)] += 1
+	valueSets = []
+	for item in amountsVals:
+		valueSets.append(amountsVals[item])
+	return valueSets
+
 # Determine if given hand has a set of given size 
 #  (if first argument is 2, will return true if the hand has a pair)
 def hasSet(numberOfSame, hand):
@@ -336,6 +347,176 @@ def highCard(hand):
 	values = sortCards(values)
 	return values[-1]
 
+# Determine the hand's second highest card
+def secondHighestCard(hand):
+	values = []
+	for card in hand:
+		values.append(value(card))
+	values = sortCards(values)
+	return values[-2]
+
+# Determine the hand's third highest card
+def thirdHighestCard(hand):
+	values = []
+	for card in hand:
+		values.append(value(card))
+	values = sortCards(values)
+	return values[-3]
+
+# Determine the hand's fourth highest card
+def fourthHighestCard(hand):
+	values = []
+	for card in hand:
+		values.append(value(card))
+	values = sortCards(values)
+	return values[-4]
+
+# Determine what player has the better straight
+def bestStraight():
+	# Not using this right now
+	straightHolders = []
+	for player in players:
+		if isStraight(player):
+			straightHolders.append(players.index(player))
+	values1 = []
+	values2 = []
+	for card in players[0]:
+		values1.append(value(card))
+	for card in players[1]:
+		values2.append(value(card))
+	sortCards(values1)
+	sortCards(values2)
+	high1 = values1[-1]
+	high2 = values2[-1]
+	if high1 > high2:
+		return 0
+	if high2 > high1:
+		return 1
+	else:
+		return 2
+
+# Determine which player has the better four of a kind
+def bestFourOfAKind():
+	sets1 = unsortedSets(players[0])
+	sets2 = unsortedSets(players[1])
+	playerOnesSet = sets1.index(4)
+	playerTwosSet = sets2.index(4)
+	playerOnesKicker = sets1.index(1)
+	playerTwosKicker = sets2.index(1)
+	if playerOnesSet > playerTwosSet:
+		return 0
+	if playerTwosSet > playerOnesSet:
+		return 1
+	else:
+		if playerOnesKicker > playerTwosKicker:
+			return 0
+		if playerTwosKicker > playerOnesKicker:
+			return 1
+		else:
+			return 2
+
+def bestFullHouse():
+	sets1 = unsortedSets(players[0])
+	sets2 = unsortedSets(players[1])
+	playerOnesThree = sets1.index(3)
+	playerTwosThree = sets2.index(3)
+	playerOnesTwo = sets1. index(2)
+	playerTwosTwo = sets2.index(2)
+	if playerOnesThree > playerTwosThree:
+		return 0
+	if playerTwosThree > playerOnesThree:
+		return 1
+	else:
+		if playerOnesTwo > playerTwosTwo:
+			return 0
+		if playerTwosTwo > playerOnesTwo:
+			return 1
+		else:
+			return 2
+
+# Determine who has the best flush
+def bestCards():
+	values1 = []
+	values2 = []
+	for card in players[0]:
+		values1.append(value(card))
+	for card in players[1]:
+		values2.append(value(card))
+	best1 = highCard(players[0])
+	best2 = highCard(players[1])
+	if best1 > best2:
+		return 0
+	if best2 > best1:
+		return 1
+	else:
+		nextBest1 = secondHighestCard(players[0])
+		nextBest2 = secondHighestCard(players[1])
+		if nextBest1 > nextBest2:
+			return 0
+		if nextBest2 > nextBest1:
+			return 1
+		else:
+			thirdBest1 = thirdHighestCard(players[0])
+			thirdBest2 = thirdHighestCard(players[1])
+				if thirdBest1 > thirdBest2:
+					return 0
+				if thirdBest2 > thirdBest1:
+					return 1
+				else:
+					fourthBest1 = fourthHighestCard(players[0])
+					fourthBest2 = fourthHighestCard(players[1])
+					if fourthBest1 > fourthBest2:
+						return 0
+					if fourthBest2 > fourthBest1:
+						return 1
+					else:
+						low1 = lowCard(players[0])
+						low2 = lowCard(players[1])
+						if low1 > low2:
+							return 0
+						if low2 > low1:
+							return 1
+						else:
+							return 2
+
+# Determine who has the best three of a kind
+def bestThreeOfAKind():
+	sets1 = unsortedSets(players[0])
+	sets2 = unsortedSets(players[1])
+	playerOnesSet = sets1.index(3)
+	playerTwosSet = sets2.index(3)
+	playerOnesKicker = sets1.index(1)
+	playerTwosKicker = sets2.index(1)
+	if playerOnesSet > playerTwosSet:
+		return 0
+	if playerTwosSet > playerOnesSet:
+		return 1
+	else:
+		high1 = highCard(players[0])
+		high2 = highCard(players[1])
+		if high1 == playerOnesSet:
+			high1 = secondHighestCard(players[0])
+		if high2 == playerTwosSet:
+			high2 == secondHighestCard(players[1])
+		if high1 > high2:
+			return 0
+		if high2 > high1:
+			return 0
+		else:
+			secondHighest1 = secondHighestCard(players[0])
+			secondHighest2 = secondHighestCard(players[1])
+			if secondHighest1 == high1:
+				secondHighest1 = thirdHighestCard(players[0])
+			if secondHighest2 == high2:
+				secondHighest2 = thirdHighestCard(players[1])
+			if secondHighest1 > secondHighest2:
+				return 0
+			if secondHighest2 > secondHighest1:
+				return 1
+			else:
+				return 2
+
+# Determine who won this hand, and divvy up the pot accordingly
 def whoWon():
 	global pot
 	player_ranks = []
@@ -348,6 +529,32 @@ def whoWon():
 		if player_ranks[counter] == bestHand:
 			playersWithBestHand.append(counter)
 		counter += 1
+	# If more than one player has the best hand, find out whose hand is better
+	# No comparison needed for Royal Flushes
+	if counter > 1:
+		# Who has the better straight
+		if (bestHand == 1) or (bestHand == 5):
+			# Only change the list if one of them actually has a better straight
+			if (bestStraight() == 0) or (bestStraight() == 1):
+				playersWithBestHand = [bestStraight()]
+		# Who has the better four of a kind
+		if (bestHand == 2):
+			if (bestFourOfAKind() == 0) or (bestFourOfAKind() == 1):
+				playersWithBestHand = [bestFourOfAKind()]
+		# Who has the better full house
+		if (bestHand == 3):
+			if (bestFullHouse() == 0) or (bestFullHouse() == 1):
+				playersWithBestHand = [bestFullHouse()]
+		# Who has the better flush
+		if (bestHand == 4):
+			if (bestCards() == 0) or (bestCards() == 1):
+				playersWithBestHand = [bestCards()]
+		if (bestHand == 6):
+
+
+
+
+	# Split the pot amongst the players with the best hand
 	payOut = pot/len(playersWithBestHand)
 	for player in playersWithBestHand:
 		players_money[player] += payOut
