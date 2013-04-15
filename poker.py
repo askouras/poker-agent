@@ -75,13 +75,25 @@ def raised(player_index):
 	pot += 10
 	players_money[player_index] -= 10
 	actions.insert(player_index,'raised')
-	print "Player " + str(player_index) + " has raised"
+	playStr = ""
+	if player_index == 0:
+		playStr = "Agent "
+	else:
+		playStr = "Opponent "
+
+	print playStr + "has raised"
 
 # Remove players from list if they have run out of money
 def checkPlayers():
 	global players_money
 	global inGame
-	global players
+	agentmoney = players_money[0]
+	opponentmoney = players_money[1]
+	if agentmoney <= 0:
+		inGame[0] = False
+	if opponentmoney <= 0:
+		inGame[1] = False
+	"""
 	outPlayers = []
 	counter = 0
 	while counter < len(players_money):
@@ -92,26 +104,42 @@ def checkPlayers():
 	while counter2 < len(outPlayers):
 		inGame[outPlayers[counter2]] = False
 		counter += 1
-
-# If agent raises (after opponents stayed), force opponents to raise or fold
-def forceResponse():
-	global actions
+	"""
 
 # Start opponent(s)
 def startOpponent(index):
 	global actions
+	playStr = ""
+	if index == 0:
+		playStr = "Agent"
+	else:
+		playStr = "Opponent"
 	rank = handRank(players[index])
 	# Raise if hand is a straight or better
 	if rank < 6:
 		raised(index)
+	if ('raised' in actions) and (rank > 6):
+		# Opponent has better than a pair, raise
+		if rank < 8:
+			raised(index)
+		# Otherwise stay/fold
+		else:
+			actions.insert(index,'stayed')
+			inHand[index] = False
+			print playStr + " has folded"
 	else:
 		actions.insert(index,'stayed')
-		print "Player " + str(index) + " has stayed"
+		print playStr + " has stayed"
 
 def startAgent():
 	global actions
 	index = 0
 	rank = handRank(players[index])
+	playStr = ""
+	if index == 0:
+		playStr = "Agent"
+	else:
+		playStr = "Opponent"
 	# Did the opponents raise?
 	if 'raised' in actions:
 		# Agent has better than a pair, raise
@@ -121,22 +149,19 @@ def startAgent():
 		else:
 			actions.insert(index,'stayed')
 			inHand[index] = False
-			print "Player " + str(index) + " has folded"
+			print playStr + " has folded"
 	else:
 		if rank < 6:
 			raised(index)
 			inHand[1] = False
 		else:
-			print "Player " + str(index) + " has stayed"
+			print playStr + " has stayed"
 
 # The first card in the hand is the hidden card
 
 # The cards after the first card are all visible to all players
 def visibleCards(player):
-	visibleOpponent = []
-	playersOpponents = players[player]
-	for opponents in playersOpponents:
-		visibleOpponent.append(opponent[1:])
+	return	players[player][1:]
 
 # Get the rank of the hand (a lower number is a better hand)
 def handRank(hand):
@@ -217,63 +242,6 @@ def startGame():
 		startHand()
 	if gameOver():
 		whoWonGame()
-		
-# In the first round, deal two cards to each player, the first is hidden to all other players
-#  the subsequent cards are all visible to all players
-#  In all other rounds, deal one card to each player (visible)
-#  Start a round of betting
-def bets():
-	agentsVisible = visibleCards(0)
-	opponentsVisible = visibleCards(1)
-	# See who goes first this round, based on the person with the best visible cards
-	#  On first round, person with highest card starts the round of bets
-	if len(players[0]) == 1:
-		highAgent = vals.index(lowCard(agentsVisible))
-		highOpponent = vals.index(lowCard(opponentsVisible))
-		if highAgent > highOpponent:
-			print "Agent's hand: " + str(players[0])
-			startAgent()
-		else:
-			print "Opponent's hand: " + str(players[1])
-			startOpponent(1)
-	else:
-		agentRank = handRank(agentsVisible)
-		opponentRank = handRank(opponentVisible)
-		if agentRank > opponentRank:
-			print "Agent's hand: " + str(players[0])
-			startAgent()
-		if opponentRank > agentRank:
-			print "Opponent's hand: " + str(players[1])
-			startOpponent(1)
-		else:
-			whoGoes = compareSameHands()
-
-# Setup deck and deal hands to each player
-def startHand():
-	global actions
-	global players
-	global deck
-	global pot
-	actions = []
-	players = []
-	deck = []
-	pot = 0
-	addPlayers(2)
-	checkPlayers()
-	fillDeck()
-	shuffle()
-	ante()
-	deal(2)
-	bets()
-	deal(1)
-	bets()
-	deal(1)
-	bets()
-	deal(1)
-	# All bets are in, figure out who won
-	whoWon()
-	remember()
-	print players_money
 
 # Get the suit of a given card
 def suit(card):
@@ -492,48 +460,69 @@ def bestCards():
 	if best2 > best1:
 		return 1
 	else:
-		nextBest1 = secondHighestCard(players[0])
-		nextBest2 = secondHighestCard(players[1])
-		if nextBest1 > nextBest2:
-			return 0
-		if nextBest2 > nextBest1:
-			return 1
-		else:
-			thirdBest1 = thirdHighestCard(players[0])
-			thirdBest2 = thirdHighestCard(players[1])
-			if thirdBest1 > thirdBest2:
+		if len(values1) > 1:
+			nextBest1 = secondHighestCard(players[0])
+			nextBest2 = secondHighestCard(players[1])
+			if nextBest1 > nextBest2:
 				return 0
-			if thirdBest2 > thirdBest1:
+			if nextBest2 > nextBest1:
 				return 1
 			else:
-				fourthBest1 = fourthHighestCard(players[0])
-				fourthBest2 = fourthHighestCard(players[1])
-				if fourthBest1 > fourthBest2:
-					return 0
-				if fourthBest2 > fourthBest1:
-					return 1
-				else:
-					low1 = lowCard(players[0])
-					low2 = lowCard(players[1])
-					if low1 > low2:
+				if len(values1) > 2:
+					thirdBest1 = thirdHighestCard(players[0])
+					thirdBest2 = thirdHighestCard(players[1])
+					if thirdBest1 > thirdBest2:
 						return 0
-					if low2 > low1:
+					if thirdBest2 > thirdBest1:
 						return 1
 					else:
-						return 5
+						if len(values1) > 3:
+							fourthBest1 = fourthHighestCard(players[0])
+							fourthBest2 = fourthHighestCard(players[1])
+							if fourthBest1 > fourthBest2:
+								return 0
+							if fourthBest2 > fourthBest1:
+								return 1
+							else:
+								if len(values1) > 4:
+									low1 = lowCard(players[0])
+									low2 = lowCard(players[1])
+									if low1 > low2:
+										return 0
+									if low2 > low1:
+										return 1
+									else:
+										return 5
+								else:
+									return 5
+						else:
+							return 5
+				else:
+					return 5
+		else:
+			return 5
 
 # Determine who has the best three of a kind
 def bestThreeOfAKind():
 	sets1 = unsortedSets(players[0])
 	sets2 = unsortedSets(players[1])
-	playerOnesSet = sets1.index(3)
-	playerTwosSet = sets2.index(3)
-	playerOnesKicker = sets1.index(1)
-	playerTwosKicker = sets2.index(1)
+	countT1 = sets1.count(3)
+	countT2 = sets2.count(3)
+	# Necessary debug
+	if countT1 > 0:
+		playerOnesSet = sets1.index(3)
+	else:
+		return 5
+	if countT2 > 0:
+		playerTwosSet = sets2.index(3)
+	else:
+		return 5
+	# Compare the sets of three for each player, see who's is better
 	if playerOnesSet > playerTwosSet:
 		return 0
 	if playerTwosSet > playerOnesSet:
 		return 1
+	# In case more decks are written in later
 	else:
 		high1 = highCard(players[0])
 		high2 = highCard(players[1])
@@ -562,12 +551,29 @@ def bestThreeOfAKind():
 def bestTwoPair():
 	sets1 = unsortedSets(players[0])
 	sets2 = unsortedSets(players[1])
-	playerOnesSet = sets1.index(2)
-	playerTwosSet = sets2.index(2)
-	playerOnesPair = sets1.index(2,playerOnesSet + 1)
-	playerTwosPair = sets2.index(2,playerTwosSet + 1)
-	playerOnesSingle = sets1.index(1)
-	playerTwosSingle = sets2.index(1)
+	counts1= sets1.count(2)
+	counts2 = sets2.count(2)
+	single1 = sets1.count(1)
+	single2 = sets2.count(1)
+	# Necessary debug (as in bestPair)
+	if counts1 >= 2:
+		playerOnesSet = sets1.index(2)
+		playerOnesPair = sets1.index(2,playerOnesSet + 1)
+	else:
+		return 5
+	if counts2 >= 2:
+		playerTwosSet = sets2.index(2)
+		playerTwosPair = sets2.index(2,playerTwosSet + 1)
+	else:
+		return 5
+	if single1 >= 1:
+		playerOnesSingle = sets1.index(1)
+	else:
+		return 5
+	if single2 >= 1:
+		playerTwosSingle = sets2.index(1)
+	else:
+		return 5
 	if 	((playerOnesSet > playerTwosSet) or (playerOnesSet > playerTwosPair) 
 										or (playerOnesPair > playerTwosSet) 
 										or (playerOnesPair > playerTwosPair)):
@@ -589,8 +595,16 @@ def bestTwoPair():
 def bestPair():
 	sets1 = unsortedSets(players[0])
 	sets2 = unsortedSets(players[1])
-	playerOnesSet = sets1.index(2)
-	playerTwosSet = sets2.index(2)
+	# From debug, it hits bestPair even when a player doesn't have one
+	if 2 in sets1:
+		playerOnesSet = sets1.index(2)
+	else:
+		return 5
+	if 2 in sets2:
+		playerTwosSet = sets2.index(2)
+	else:
+		return 5
+	# The normal bits
 	if playerOnesSet > playerTwosSet:
 		return 0
 	if playerTwosSet > playerOnesSet:
@@ -630,6 +644,19 @@ def bestPair():
 					return 1
 				else:
 					return 5
+
+# When only one person is left in the hand, they've won
+def whoWonTheyWon(winner):
+	global pot
+	global players_money
+	players_money[winner] += pot
+	pot = 0
+	playStr = ""
+	if playersWithBestHand[0] == 0:
+		playStr = "Agent"
+	else:
+		playStr = "Opponent"
+	print playStr + " was the only one left in the hand." + playStr + " has won the hand"
 
 # Determine who won this hand, and divvy up the pot accordingly
 def whoWon():
@@ -702,31 +729,190 @@ def whoWon():
 	for player in playersWithBestHand:
 		players_money[player] += payOut
 		if len(playersWithBestHand) == 1:
-			print "Player " + str(playersWithBestHand[0]) + " has won the hand with a " + hand
+			playStr = ""
+			if playersWithBestHand[0] == 0:
+				playStr = "Agent"
+			else:
+				playStr = "Opponent"
+			print playStr + " has won the hand with a " + hand
 		else:
+			"""
 			winners = ""
 			for player in playersWithBestHand:
-				winners += player + " and "
-			print "Players " + winners + " each have a " + hand + " and have split the pot evenly"
+				playStr = ""
+				if player == 0:
+					playStr = "Agent"
+				else:
+					playStr = "Opponent"
+				winners += playStr
+			"""
+			print "Agent and Opponent each have a " + hand + " and have split the pot evenly"
 
 # Figure out is over, if over, print winner
 def gameOver():
 	checkPlayers()
-	playersLeft = 0
-	for True in inGame:
-		playersLeft += 1
+	playersLeft = inGame.count(True)
 	if playersLeft == 1:
 		return True
 	else:
 		return False
 
 def whoWonGame():
-	playersLeft = 0
-	for True in inGame:
-		playersLeft += 1
-		print playersLeft
+	playersLeft = inGame.count(True)
 	if playersLeft == 1:
 		winner = inGame.index(True)
-		print "Player " + str(winner) + " has won the game with " + str(players_money[winner]) + " credits"
+		playStr = ""
+		if winner == 0:
+			playStr = "Agent"
+		if winner == 1:
+			playStr = "Opponent"
+		print playStr + " has won the game with " + str(players_money[winner]) + " credits"
+
+# Determine who has the better of the same hand
+# If the hands are equally good (best*****() returns 5), pick a player at random
+def compareSameHands(rank):
+	if rank == 0:
+		return random.randint(0,1)
+	if rank == 1:
+		stra = bestStraight()
+		if stra == 5:
+			return random.randint(0,1)
+		else:
+			return stra
+	if rank == 2:
+		return bestFourOfAKind()
+	if rank == 3:
+		fh = bestFullHouse()
+		if fh == 5:
+			return random.randint(0,1)
+		else:
+			return fh
+	if rank == 4:
+		fl = bestCards()
+		if fl == 5:
+			return random.randint(0,1)
+		else:
+			return fl
+	if rank == 5:
+		strai = bestStraight()
+		if strai == 5:
+			return random.randint(0,1)
+		else:
+			return strai
+	if rank == 6:
+		thr = bestThreeOfAKind()
+		if thr == 5:
+			return random.randint(0,1)
+		else:
+			return thr
+	if rank == 7:
+		twp = bestTwoPair()
+		if twp == 5:
+			return random.randint(0,1)
+		else:
+			return twp
+	if rank == 8:
+		pai = bestPair()
+		if pai == 5:
+			return random.randint(0,1)
+		else:
+			return pai
+	if rank == 9:
+		hc = bestCards()
+		if hc == 5:
+			return random.randint(0,1)
+		else:
+			return hc
+	
+# In the first round, deal two cards to each player, the first is hidden to all other players
+#  the subsequent cards are all visible to all players
+#  In all other rounds, deal one card to each player (visible)
+#  Start a round of betting
+def bets():
+	agentsVisible = visibleCards(0)
+	opponentsVisible = visibleCards(1)
+	# See who goes first this round, based on the person with the best visible cards
+	#  On first round, person with highest card starts the round of bets
+	if len(players[0]) == 1:
+		highAgent = vals.index(lowCard(agentsVisible))
+		highOpponent = vals.index(lowCard(opponentsVisible))
+		if highAgent > highOpponent:
+			print "Agent's hand: " + str(players[0])
+			startAgent()
+			print "Opponent's hand: " + str(players[1])
+			startOpponent(1)
+		else:
+			print "Opponent's hand: " + str(players[1])
+			startOpponent(1)
+			print "Agent's hand: " + str(players[0])
+			startAgent()
+	else:
+		agentRank = handRank(agentsVisible)
+		opponentRank = handRank(opponentsVisible)
+		if agentRank > opponentRank:
+			print "Agent's hand: " + str(players[0])
+			startAgent()
+			print "Opponent's hand: " + str(players[1])
+			startOpponent(1)
+		if opponentRank > agentRank:
+			print "Opponent's hand: " + str(players[1])
+			startOpponent(1)
+			print "Agent's hand: " + str(players[0])
+			startAgent()
+		else:
+			whoGoes = compareSameHands(agentRank)
+			if whoGoes == 0:
+				print "Agent's hand: " + str(players[0])
+				startAgent()
+				print "Opponent's hand: " + str(players[1])
+				startOpponent(1)
+			else:
+				print "Opponent's hand: " + str(players[1])
+				startOpponent(1)
+				print "Agent's hand: " + str(players[0])
+				startAgent()
+
+# Setup deck and deal hands to each player
+def startHand():
+	global actions
+	global players
+	global deck
+	global pot
+	actions = []
+	players = []
+	deck = []
+	pot = 0
+	addPlayers(2)
+	checkPlayers()
+	fillDeck()
+	shuffle()
+	ante()
+	deal(2)
+	bets()
+	if len(inHand) > 1:
+		deal(1)
+		bets()
+		if len (inHand) > 1:
+			deal(1)
+			bets()
+			if len(inHand) > 1:
+				deal(1)
+				bets()
+				finishHand()
+			else:
+				finishHand()
+		else:
+			finishHand()
+	else:
+		finishHand()
+
+# All bets are in, figure out who won
+def finishHand():
+	if len(inHand) > 1:
+		whoWon()
+	else:
+		whoOneTheyWon(inHand.index(True))
+	remember()
+	print players_money
 
 startGame()
