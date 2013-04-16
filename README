@@ -1,1 +1,3 @@
 A poker-playing AI agent that utilises machine learning to create strategies against an opponent
+
+Parts of the code are written with the intention to expand to more than one opponent for the agent to face, but this was dumbed down in certain parts just to get the ball rolling. "Easily" fixeable at a later point.

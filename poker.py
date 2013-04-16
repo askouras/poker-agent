@@ -93,18 +93,6 @@ def checkPlayers():
 		inGame[0] = False
 	if opponentmoney <= 0:
 		inGame[1] = False
-	"""
-	outPlayers = []
-	counter = 0
-	while counter < len(players_money):
-		if players_money[counter] == 0:
-			outPlayers.append(counter)
-		counter += 1
-	counter2 = 0
-	while counter2 < len(outPlayers):
-		inGame[outPlayers[counter2]] = False
-		counter += 1
-	"""
 
 # Start opponent(s)
 def startOpponent(index):
@@ -131,6 +119,7 @@ def startOpponent(index):
 		actions.insert(index,'stayed')
 		print playStr + " has stayed"
 
+# Start agent
 def startAgent():
 	global actions
 	index = 0
@@ -156,8 +145,6 @@ def startAgent():
 			inHand[1] = False
 		else:
 			print playStr + " has stayed"
-
-# The first card in the hand is the hidden card
 
 # The cards after the first card are all visible to all players
 def visibleCards(player):
@@ -185,28 +172,6 @@ def handRank(hand):
 		return 8
 	else:
 		return 9 # later will find out what the high card is (when needed)
-
-"""
-#Raise function
-def raiseAmount(10):
-    global players_money
-    global pot
-    players_money = [player_money - 10 for player_money in players_money]
-    for player_money in players_money:
-        pot += 10
-            player_money -= 10
-return "raise"
-"""
-
-#************ to stay ************#
-def stay():
-    global players_money
-    global pot
-    players_money = [player_money - 0 for player_money in players_money]
-    for player_money in players_money:
-        pot += 0
-        player_money -= 0
-    return "stay"
 
 # OpponentPlay function 
 def opponentPlay():
@@ -284,16 +249,21 @@ def isStraight(hand):
 	for card in hand:
 		values.append(value(card))
 	values = sortCards(values)
+	# Look for specific case where the Ace is a low Ace (a "1", let's say)
+	#   (instead of the usual high Ace, what would be a "14")
 	if (('A' in values) and ('2' in values) and ('3' in values)
 						and ('4' in values) and ('5' in values)):
 		return True
 	else:
+		# Pick out the low card and create a list, starting from the low card's 
+		#   index until you reach 5
 		low = vals.index(lowCard(hand))
 		rangeUp = range(low,low + 5)
 		ranks = []
 		for val in values:
 			ranks.append(vals.index(val))
 		ranks.sort()
+		# Compare the sorted ranks with the previously created range
 		return ranks == rangeUp
 
 # Determine if given hand is a royal flush (suited [10,J,Q,K,A])
@@ -323,6 +293,9 @@ def sets(hand):
 	valueSets.sort()
 	return valueSets
 
+# Find the sets of a hand and return an unsorted list with the number of 
+#   occurances of each card (for when I want to know which card value had what 
+#   number of occurances)
 def unsortedSets(hand):
 	amountsVals = {}
 	for val in vals:
@@ -335,7 +308,7 @@ def unsortedSets(hand):
 	return valueSets
 
 # Determine if given hand has a set of given size 
-#  (if first argument is 2, will return true if the hand has a pair)
+#  (if first argument is 2, will return true if the hand has a pair, etc)
 def hasSet(numberOfSame, hand):
 	if (numberOfSame in sets(hand)):
 		return True
@@ -349,7 +322,7 @@ def hasTwoPair(hand):
 			pairs += 1
 	return pairs == 2
 
-# Determine the hand's high card
+# Determine the hand's high card (where Ace is the highest possible card)
 def highCard(hand):
 	values = []
 	for card in hand:
@@ -357,7 +330,10 @@ def highCard(hand):
 	values = sortCards(values)
 	return values[-1]
 
-# Determine the hand's second highest card
+# Determine the hand's second highest card (for comparisons of hands)
+#  Yes, I'm not proud of the need to include something like this and this could
+#  easily be made into one function that takes an additional argument, but I
+#  just wanted to get this running
 def secondHighestCard(hand):
 	values = []
 	for card in hand:
@@ -365,7 +341,7 @@ def secondHighestCard(hand):
 	values = sortCards(values)
 	return values[-2]
 
-# Determine the hand's third highest card
+# Determine the hand's third highest card (for comparisons of hands)
 def thirdHighestCard(hand):
 	values = []
 	for card in hand:
@@ -373,7 +349,7 @@ def thirdHighestCard(hand):
 	values = sortCards(values)
 	return values[-3]
 
-# Determine the hand's fourth highest card
+# Determine the hand's fourth highest card (for comparisons of hands)
 def fourthHighestCard(hand):
 	values = []
 	for card in hand:
@@ -382,6 +358,8 @@ def fourthHighestCard(hand):
 	return values[-4]
 
 # Determine what player has the better straight
+#   You really only need to know that 1) they both have straights and 2) the 
+#   high card for each straight
 def bestStraight():
 	# Not using this right now
 	straightHolders = []
@@ -405,18 +383,17 @@ def bestStraight():
 	else:
 		return 5
 
-# Determine which player has the better four of a kind
+# Determine which player has the best four of a kind
 def bestFourOfAKind():
 	sets1 = unsortedSets(players[0])
 	sets2 = unsortedSets(players[1])
 	playerOnesSet = sets1.index(4)
 	playerTwosSet = sets2.index(4)
-	playerOnesKicker = sets1.index(1)
-	playerTwosKicker = sets2.index(1)
 	if playerOnesSet > playerTwosSet:
 		return 0
 	if playerTwosSet > playerOnesSet:
 		return 1
+	# This is only necessary if/when there are multiple decks
 	else:
 		if playerOnesKicker > playerTwosKicker:
 			return 0
@@ -437,6 +414,7 @@ def bestFullHouse():
 		return 0
 	if playerTwosThree > playerOnesThree:
 		return 1
+	# This is only necessary if/when there are multiple decks
 	else:
 		if playerOnesTwo > playerTwosTwo:
 			return 0
@@ -445,7 +423,7 @@ def bestFullHouse():
 		else:
 			return 5
 
-# Determine who has the best flush
+# Determine who has the best flush (yes, this looks incredibly painful)
 def bestCards():
 	values1 = []
 	values2 = []
@@ -459,6 +437,7 @@ def bestCards():
 		return 0
 	if best2 > best1:
 		return 1
+	# If they both have the same high card, start checking the next best card(s)
 	else:
 		if len(values1) > 1:
 			nextBest1 = secondHighestCard(players[0])
@@ -522,7 +501,7 @@ def bestThreeOfAKind():
 		return 0
 	if playerTwosSet > playerOnesSet:
 		return 1
-	# In case more decks are written in later
+	# This is only necessary if/when there are multiple decks
 	else:
 		high1 = highCard(players[0])
 		high2 = highCard(players[1])
@@ -736,6 +715,8 @@ def whoWon():
 				playStr = "Opponent"
 			print playStr + " has won the hand with a " + hand
 		else:
+			# Leaving this stuff in for now (aka, in case there are more 
+			#   opponents)
 			"""
 			winners = ""
 			for player in playersWithBestHand:
@@ -748,7 +729,7 @@ def whoWon():
 			"""
 			print "Agent and Opponent each have a " + hand + " and have split the pot evenly"
 
-# Figure out is over, if over, print winner
+# Figure out is over (check how many players are left in the game)
 def gameOver():
 	checkPlayers()
 	playersLeft = inGame.count(True)
@@ -757,6 +738,7 @@ def gameOver():
 	else:
 		return False
 
+# Determine who won the game (aka, the only person left in the game)
 def whoWonGame():
 	playersLeft = inGame.count(True)
 	if playersLeft == 1:
@@ -872,7 +854,8 @@ def bets():
 				print "Agent's hand: " + str(players[0])
 				startAgent()
 
-# Setup deck and deal hands to each player
+# Setup deck and deal hands to each player, start each round of betting after
+#   each round of dealing, and find out who won
 def startHand():
 	global actions
 	global players
@@ -906,7 +889,7 @@ def startHand():
 	else:
 		finishHand()
 
-# All bets are in, figure out who won
+# All bets are in, figure out who won this hand
 def finishHand():
 	if len(inHand) > 1:
 		whoWon()
