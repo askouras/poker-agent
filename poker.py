@@ -6,30 +6,26 @@ vals  = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
 
 # Where player[0] is the agent
 players = []
-# Keeps track of previous hands
-knowledgeBaseHands = []
-# How much money each player has
+# How much money each player has (sorted the same as players)
 players_money = []
 # Amount of money in the pot
 pot = 0
 # The cards in the deck
 deck = []
-# Keeps track of who folded
+# Keeps track of who's still playing (this hand)'
 inHand = []
-# Keeps track of who's still playing
+# Keeps track of who's still playing (this game)
 inGame = []
 # Keeps track of what each player did in the hand
 actions = []
+# Keeps track of who won this hand
+winners = []
 # Keeps track of previous moves
 knowledgeBaseActions = []
-# Track the payout
-result = []
+# Keeps track of previous hands
+knowledgeBaseHands = []
 # Keeps track of previous payouts
 knowledgeBasePayouts = []
-# Holds the actions the opponent makes - raise or stay
-opponentHistory = []
-# Holds the [[agents hand rank], [agents play], [opponents play]]
-agentHistory =[[],[],[]]
 
 # Create deck by combining suits and vals and adding to a list
 def fillDeck():
@@ -172,6 +168,8 @@ def handRank(hand):
 # Remember function (don't know if we still need this)
 def remember():
 	knowledgeBaseActions.append(actions)
+	knowledgeBaseHands.append(players)
+	knowledgeBaseWinner.append(winners)
 
 # Start game function
 def startGame():
@@ -623,6 +621,7 @@ def whoWonTheyWon(winner):
 		playStr = "Agent"
 	else:
 		playStr = "Opponent"
+	winners.append(playersWithBestHand[0])
 	print playStr + " was the only one left in the hand." + playStr + " has won the hand"
 
 # Determine who won this hand, and divvy up the pot accordingly
@@ -683,6 +682,7 @@ def whoWon():
 	if bestHand == 9: hand = "high card"
 	# Split the pot amongst the players with the best hand
 	payOut = pot/len(playersWithBestHand)
+	winners.append(playersWithBestHand)
 	for player in playersWithBestHand:
 		players_money[player] += payOut
 		if len(playersWithBestHand) == 1:
