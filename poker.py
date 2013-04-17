@@ -24,8 +24,8 @@ winners = []
 knowledgeBaseActions = []
 # Keeps track of previous hands
 knowledgeBaseHands = []
-# Keeps track of previous payouts
-knowledgeBasePayouts = []
+# Keeps track of previous winners
+knowledgeBaseWinners = []
 
 # Create deck by combining suits and vals and adding to a list
 def fillDeck():
@@ -71,6 +71,9 @@ def stay(player_index):
 	else:
 		playStr = "Opponent "
 	# If someone else raised, this player is folding
+	#   Technically if they fold, I believe they don't get to see the winner's 
+	#   hand (unless of course there is more than one player left, etc) so
+	#   catching bluffs might not be that easy with that limitation
 	if 'raised' in actions:
 		inHand[player_index] = False
 		print playStr + " has folded"
@@ -169,7 +172,7 @@ def handRank(hand):
 def remember():
 	knowledgeBaseActions.append(actions)
 	knowledgeBaseHands.append(players)
-	knowledgeBaseWinner.append(winners)
+	knowledgeBaseWinners.append(winners)
 
 # Start game function
 def startGame():
