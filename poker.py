@@ -67,21 +67,43 @@ def ante():
 		pot += 10
 		player_money -= 10
 
+# Player stay/fold
+def stay(player_index):
+	global actions
+	if player_index == 0:
+		playStr = "Agent "
+	else:
+		playStr = "Opponent "
+	# If someone else raised, this player is folding
+	if 'raised' in actions:
+		inHand[player_index] = False
+		print playStr + " has folded"
+	# If no one raised, this player is staying
+	else:
+		actions.insert(player_index,'stayed')
+		print playStr + "has stayed"
+
+
 # Player raise
 def raised(player_index):
 	global pot
 	global players_money
 	global actions
-	pot += 10
-	players_money[player_index] -= 10
-	actions.insert(player_index,'raised')
-	playStr = ""
-	if player_index == 0:
-		playStr = "Agent "
-	else:
-		playStr = "Opponent "
+	# make sure they have enough money to raise
+	if players_money[player_index] >= 10:
+		pot += 10
+		players_money[player_index] -= 10
+		actions.insert(player_index,'raised')
+		playStr = ""
+		if player_index == 0:
+			playStr = "Agent "
+		else:
+			playStr = "Opponent "
 
-	print playStr + "has raised"
+		print playStr + "has raised"
+	# if they ran out of money to raise, they stay an all other players stay
+	else:
+		stay(player_index)
 
 # Remove players from list if they have run out of money
 def checkPlayers():
@@ -106,18 +128,8 @@ def startOpponent(index):
 	# Raise if hand is a straight or better
 	if rank < 6:
 		raised(index)
-	if ('raised' in actions) and (rank > 6):
-		# Opponent has better than a pair, raise
-		if rank < 8:
-			raised(index)
-		# Otherwise stay/fold
-		else:
-			actions.insert(index,'stayed')
-			inHand[index] = False
-			print playStr + " has folded"
 	else:
-		actions.insert(index,'stayed')
-		print playStr + " has stayed"
+		stay(index)
 
 # Start agent
 def startAgent():
@@ -129,22 +141,16 @@ def startAgent():
 		playStr = "Agent"
 	else:
 		playStr = "Opponent"
+	# How good is your hand?
+	if   (not 'raised' in actions) and (rank < 5):
+		raised(index)
 	# Did the opponents raise?
-	if 'raised' in actions:
+	elif 'raised' in actions:
 		# Agent has better than a pair, raise
 		if rank < 8:
 			raised(index)
-		# Otherwise stay/fold
-		else:
-			actions.insert(index,'stayed')
-			inHand[index] = False
-			print playStr + " has folded"
 	else:
-		if rank < 6:
-			raised(index)
-			inHand[1] = False
-		else:
-			print playStr + " has stayed"
+		stay(index)
 
 # The cards after the first card are all visible to all players
 def visibleCards(player):
@@ -152,51 +158,18 @@ def visibleCards(player):
 
 # Get the rank of the hand (a lower number is a better hand)
 def handRank(hand):
-	if   isRoyalFlush(hand):
-		return 0
-	elif isStraightFlush(hand):
-		return 1
-	elif hasSet(4,hand):
-		return 2
-	elif (hasSet(3,hand) and hasSet(2,hand)):
-		return 3
-	elif  isFlush(hand):
-		return 4
-	elif isStraight(hand):
-		return 5
-	elif hasSet(3,hand):
-		return 6
-	elif hasTwoPair(hand):
-		return 7
-	elif hasSet(2,hand):
-		return 8
-	else:
-		return 9 # later will find out what the high card is (when needed)
+	if   isRoyalFlush(hand):					return 0
+	elif isStraightFlush(hand):					return 1
+	elif hasSet(4,hand):						return 2
+	elif (hasSet(3,hand) and hasSet(2,hand)):	return 3
+	elif isFlush(hand):							return 4
+	elif isStraight(hand):						return 5
+	elif hasSet(3,hand):						return 6
+	elif hasTwoPair(hand):						return 7
+	elif hasSet(2,hand):						return 8
+	else:										return 9 # They got nothing
 
-# OpponentPlay function 
-def opponentPlay():
-    handR = handRank(hand)
-    if handR <= 5:
-        opponentPlays = raiseAmount(10)
-        opponentHistory.append([opponentPlays])
-        return opponentPlays
-    else:
-        opponentPlays = stay()
-        opponentHistory.append([opponentPlays])
-        return opponentPlays
-
-# Agent Play function
-def agentPlay():
-    handR = handRank(hand)
-    if handR <= 3:
-        agentPlay = raiseAmount(10)
-        opponentPlays = oppontentPlay()
-        agentHistory.append([handR, agentPlay, opponentPlays])
-    else:
-        agentPlay = stay()
-        playHistory.append([handR, agentPlay])
-
-# Remember function
+# Remember function (don't know if we still need this)
 def remember():
 	knowledgeBaseActions.append(actions)
 
@@ -322,6 +295,16 @@ def hasTwoPair(hand):
 			pairs += 1
 	return pairs == 2
 
+# Determine the hand's nth highest card
+def whatHighestCard(hand,what):
+	negated = 0 - what
+	values = []
+	for card in hand:
+		values.append(value(card))
+	values = sortCards(values)
+	#  This list goes up (low to high)
+	return values[negated]
+
 # Determine the hand's high card (where Ace is the highest possible card)
 def highCard(hand):
 	values = []
@@ -440,24 +423,24 @@ def bestCards():
 	# If they both have the same high card, start checking the next best card(s)
 	else:
 		if len(values1) > 1:
-			nextBest1 = secondHighestCard(players[0])
-			nextBest2 = secondHighestCard(players[1])
+			nextBest1 = whatHighestCard(players[0],2)
+			nextBest2 = whatHighestCard(players[1],2)
 			if nextBest1 > nextBest2:
 				return 0
 			if nextBest2 > nextBest1:
 				return 1
 			else:
 				if len(values1) > 2:
-					thirdBest1 = thirdHighestCard(players[0])
-					thirdBest2 = thirdHighestCard(players[1])
+					thirdBest1 = whatHighestCard(players[0],3)
+					thirdBest2 = whatHighestCard(players[1],3)
 					if thirdBest1 > thirdBest2:
 						return 0
 					if thirdBest2 > thirdBest1:
 						return 1
 					else:
 						if len(values1) > 3:
-							fourthBest1 = fourthHighestCard(players[0])
-							fourthBest2 = fourthHighestCard(players[1])
+							fourthBest1 = whatHighestCard(players[0],4)
+							fourthBest2 = whatHighestCard(players[1],4)
 							if fourthBest1 > fourthBest2:
 								return 0
 							if fourthBest2 > fourthBest1:
@@ -506,20 +489,20 @@ def bestThreeOfAKind():
 		high1 = highCard(players[0])
 		high2 = highCard(players[1])
 		if high1 == playerOnesSet:
-			high1 = secondHighestCard(players[0])
+			high1 = whatHighestCard(players[0],2)
 		if high2 == playerTwosSet:
-			high2 == secondHighestCard(players[1])
+			high2 == whatHighestCard(players[1],2)
 		if high1 > high2:
 			return 0
 		if high2 > high1:
 			return 1
 		else:
-			secondHighest1 = secondHighestCard(players[0])
-			secondHighest2 = secondHighestCard(players[1])
+			secondHighest1 = whatHighestCard(players[0],2)
+			secondHighest2 = whatHighestCard(players[1],2)
 			if secondHighest1 == high1:
-				secondHighest1 = thirdHighestCard(players[0])
+				secondHighest1 = whatHighestCard(players[0],3)
 			if secondHighest2 == high2:
-				secondHighest2 = thirdHighestCard(players[1])
+				secondHighest2 = whatHighestCard(players[1],3)
 			if secondHighest1 > secondHighest2:
 				return 0
 			if secondHighest2 > secondHighest1:
@@ -553,14 +536,19 @@ def bestTwoPair():
 		playerTwosSingle = sets2.index(1)
 	else:
 		return 5
+	# If either of player ones sets bests all of player twos sets, 
+	#   they've the best two pair
 	if 	((playerOnesSet > playerTwosSet) or (playerOnesSet > playerTwosPair) 
 										or (playerOnesPair > playerTwosSet) 
 										or (playerOnesPair > playerTwosPair)):
 		return 0
+	# If either of player twos sets bests all of player ones sets, 
+	#   they've the best two pair
 	if 	((playerOnesSet < playerTwosSet) or (playerOnesSet < playerTwosPair) 
 										or (playerOnesPair < playerTwosSet) 
 										or (playerOnesPair < playerTwosPair)):
 		return 1
+	# Otherwise, compare their kickers (the non-pair card)
 	else:
 		if playerOnesSingle > playerTwosSingle:
 			return 0
@@ -592,31 +580,31 @@ def bestPair():
 		high1 = highCard(players[0])
 		high2 = highCard(players[1])
 		if high1 == playerOnesSet:
-			high1 = secondHighestCard(players[0])
+			high1 = whatHighestCard(players[0],2)
 		if high2 == playerTwosSet:
-			high2 == secondHighestCard(players[1])
+			high2 == whatHighestCard(players[1],2)
 		if high1 > high2:
 			return 0
 		if high2 > high1:
 			return 1
 		else:
-			secondHighest1 = secondHighestCard(players[0])
-			secondHighest2 = secondHighestCard(players[1])
+			secondHighest1 = whatHighestCard(players[0],2)
+			secondHighest2 = whatHighestCard(players[1],2)
 			if secondHighest1 == high1:
-				secondHighest1 = thirdHighestCard(players[0])
+				secondHighest1 = whatHighestCard(players[0],3)
 			if secondHighest2 == high2:
-				secondHighest2 = thirdHighestCard(players[1])
+				secondHighest2 = whatHighestCard(players[1],3)
 			if secondHighest1 > secondHighest2:
 				return 0
 			if secondHighest2 > secondHighest1:
 				return 1
 			else:
-				thirdHighest1 = thirdHighestCard(players[0])
-				thirdHighest2 = thirdHighestCard(players[1])
+				thirdHighest1 = whatHighestCard(players[0],3)
+				thirdHighest2 = whatHighestCard(players[1],3)
 				if thirdHighest1 == high1:
-					thirdHighest1 = fourthHighestCard(players[0])
+					thirdHighest1 = whatHighestCard(players[0],4)
 				if thirdHighest2 == high2:
-					thirdHighest2 = fourthHighestCard(players[1])
+					thirdHighest2 = whatHighestCard(players[1],4)
 				if thirdHighest1 > thirdHighest2:
 					return 0
 				if thirdHighest2 > thirdHighest1:
@@ -682,27 +670,17 @@ def whoWon():
 		if (bestHand == 8):
 			if (bestPair() == 0) or (bestPair() == 1):
 				playersWithBestHand = [bestPair()]
-
-	if bestHand == 0:
-		hand = "royal flush"
-	if bestHand == 1:
-		hand = "straight flush"
-	if bestHand == 2:
-		hand = "four of a kind"
-	if bestHand == 3:
-		hand = "full house"
-	if bestHand == 4:
-		hand = "flush"
-	if bestHand == 5:
-		hand = "straight"
-	if bestHand == 6:
-		hand = "three of a kind"
-	if bestHand == 7:
-		hand = "two pair"
-	if bestHand == 8:
-		hand = "one pair"
-	if bestHand == 9:
-		hand = "high card"
+	# Create a string of the best hand
+	if bestHand == 0: hand = "royal flush"
+	if bestHand == 1: hand = "straight flush"
+	if bestHand == 2: hand = "four of a kind"
+	if bestHand == 3: hand = "full house"
+	if bestHand == 4: hand = "flush"
+	if bestHand == 5: hand = "straight"
+	if bestHand == 6: hand = "three of a kind"
+	if bestHand == 7: hand = "two pair"
+	if bestHand == 8: hand = "one pair"
+	if bestHand == 9: hand = "high card"
 	# Split the pot amongst the players with the best hand
 	payOut = pot/len(playersWithBestHand)
 	for player in playersWithBestHand:
