@@ -387,16 +387,25 @@ def startOpponent(index):
 		playStr = "Opponent"
 	rank = handRank(players[index])
     # pick strategy for this entire game
-    opponentStrategy = random.randrange(1,2)
+    opponentStrategy = random.randrange(1,3)
     if (opponentStrategy == 1):
         # Raise if hand is a straight or better
         if rank < 6:
             raised(index)
         else:
             stay(index)
-#elif (opponentStrategy == 2):
-        
-
+    elif (opponentStrategy == 2):
+        # Deal with the opponents probability
+        if (bestOpponentHandRank < 4):
+            raised(index)
+        else:
+            stay(index)
+    elif (opponentStrategy == 3):
+        # The opponent only knows what play the agent made last - raise or stay
+        if (raised(0) && bestOpponentHandRank < 3):
+            raised(index)
+        else:
+            stay(index)
 
 # Start agent
 def startAgent():
