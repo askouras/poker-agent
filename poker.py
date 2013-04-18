@@ -6,8 +6,6 @@ vals  = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
 
 # Where player[0] is the agent
 players = []
-# Keeps track of previous hands
-knowledgeBaseHands = []
 # How much money each player has
 players_money = []
 # Amount of money in the pot
