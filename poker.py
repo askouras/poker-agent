@@ -6,26 +6,34 @@ vals  = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
 
 # Where player[0] is the agent
 players = []
-# How much money each player has (sorted the same as players)
+# Keeps track of previous hands
+knowledgeBaseHands = []
+# How much money each player has
 players_money = []
 # Amount of money in the pot
 pot = 0
 # The cards in the deck
 deck = []
-# Keeps track of who's still playing (this hand)'
+# Keeps track of who folded
 inHand = []
-# Keeps track of who's still playing (this game)
+# Keeps track of who's still playing
 inGame = []
 # Keeps track of what each player did in the hand
 actions = []
-# Keeps track of who won this hand
-winners = []
 # Keeps track of previous moves
 knowledgeBaseActions = []
-# Keeps track of previous hands
-knowledgeBaseHands = []
-# Keeps track of previous winners
-knowledgeBaseWinners = []
+# Track the payout
+result = []
+# Keeps track of previous payouts
+knowledgeBasePayouts = []
+# Holds the actions the opponent makes - raise or stay
+opponentHistory = []
+# Holds the [[agents hand rank], [agents play], [opponents play]]
+agentHistory =[[],[],[]]
+# Holds the opponents probability of producing each hand (where each index matches a hand rank)
+opponentProbability = []
+# Holds the agents probability of procucing each hand (where each index matches a hand rank)
+agentProbability = []
 
 # Create deck by combining suits and vals and adding to a list
 def fillDeck():
@@ -40,7 +48,7 @@ def addPlayers(numberOfPlayers):
 
 def addPlayersStart(numberP):
 	for i in range(numberP):
-		players_money.append(100)
+		players_money.append(30)
 		inHand.append(True)
 		inGame.append(True)
 
@@ -63,6 +71,238 @@ def ante():
 		pot += 10
 		player_money -= 10
 
+# Initialize the agentProbability and opponentProbability lists to 0
+x = 0
+while x < 9:
+    agentProbability.insert(x, 0)
+    opponentProbability.insert(x, 0)
+    x = x +1
+print agentProbability
+print opponentProbability
+
+# Function for the Agents probability
+def agentProb(hand):
+    # search to see if the current hand is in a royal flush
+    if hand in isRoyalFlush(hand):
+        value0 = agentProbability[0]        # store the value of element 0
+        value0 = value0 + 1                 # if the current hand is found increase the probability by 1
+        del agentProbability[0]             # delete that current value
+        agentProbability.insert(0, value0)  # insert at index 0 the new value
+    else:
+        value0 = agentProbability[0]
+        value0 = value0 + 0
+        del agentProbability[0]
+        agentProbability.insert(0, value0)
+    
+    # search to see if the current hand is in a straight flush
+    if hand in isStraightFlush(hand):
+        value1 = agentProbability[1]
+        value1 = value1 + 1
+        del agentProbability[1]
+        agentProbability.insert(1, value1)
+    else:
+        value1 = agentProbability[1]
+        value1 = value1 + 0
+        del agentProbability[1]
+        agentProbability.insert(1, value1)
+    
+    # search to see if the current hand is in a set
+    if hand in hasSet(4, hand):
+        value2 = agentProbability[2]
+        value2 = value2 + 1
+        del agentProbability[2]
+        agentProbability.insert(2, value2)
+    else:
+        value2 = agentProbability[2]
+        value2 = value2 + 0
+        del agentProbability[2]
+        agentProbability.insert(2, value2)
+    
+    # search to see if the current hand is in a set
+    if hand in (hasSet(3, hand) and hasSet(2, hand)):
+        value3 = agentProbability[3]
+        value3 = value3 + 1
+        del agentProbability[3]
+        agentProbability.insert(3, value3)
+    else:
+        value3 = agentProbability[3]
+        value3 = value3 + 0
+        del agentProbability[3]
+        agentProbability.insert(3, value3)
+    
+    # search to see if the current hand is in a flush
+    if hand in isFlush(hand):
+        value4 = agentProbability[4]
+        value4 = value4 + 1
+        del agentProbability[4]
+        agentProbability.insert(4, value4)
+    else:
+        value4 = agentProbability[4]
+        value4 = value4 + 0
+        del agentProbability[4]
+        agentProbability.insert(4, value4)
+    
+    # search to see if the current hand is in a straight
+    if hand in isStraight(hand):
+        value5 = agentProbability[5]
+        value5 = value5 + 1
+        del agentProbability[5]
+        agentProbability.insert(5, value5)
+    else:
+        value5 = agentProbability[5]
+        value5 = value5 + 0
+        del agentProbability[5]
+        agentProbability.insert(5, value5)
+    
+    # search to see if the current hand is in a set
+    if hand in hasSet(3,hand):
+        value6 = agentProbability[6]
+        value6 = value6 + 1
+        del agentProbability[6]
+        agentProbability.insert(6, value6)
+    else:
+        value6 = agentProbability[6]
+        value6 = value6 + 0
+        del agentProbability[6]
+        agentProbability.insert(6, value6)
+    
+    # search to see if the current hand is in a two pair
+    if hand in hasTwoPair(hand):
+        value7 = agentProbability[7]
+        value7 = value7 + 1
+        del agentProbability[7]
+        agentProbability.insert(7, value7)
+    else:
+        value7 = agentProbability[7]
+        value7 = value7 + 0
+        del agentProbability[7]
+        agentProbability.insert(7, value7)
+    
+    # search to see if the current hand is in a set
+    if hand in hasSet(2,hand):
+        value8 = agentProbability[8]
+        value8 = value8 + 1
+        del agentProbability[8]
+        agentProbability.insert(8, value8)
+    else:
+        value8 = agentProbability[8]
+        value8 = value8 + 0
+        del agentProbability[8]
+        agentProbability.insert(8, value8)
+    print agentProbability
+
+# Function for the Opponents probability
+# must change hand to the visible hand -- quick change
+def opponentProb(hand):
+    # search to see if the current hand is in a royal flush
+    if hand in isRoyalFlush(hand):
+        oppvalue0 = opponentProbability[0]          # store the value of element 0
+        oppvalue0 = oppvalue0 + 1                   # if the current hand is found increase the probability by 1
+        del opponentProbability[0]                  # delete that current value
+        opponentProbability.insert(0, oppvalue0)    # insert at index 0 the new value
+    else:
+        oppvalue0 = opponentProbability[0]
+        oppvalue0 = oppvalue0 + 0
+        del opponentProbability[0]
+        opponentProbability.insert(0, oppvalue0)
+    
+    # search to see if the current hand is in a straight flush
+    if hand in isStraightFlush(hand):
+        oppvalue1 = opponentProbability[1]
+        oppvalue1 = oppvalue1 + 1
+        del opponentProbability[1]
+        opponentProbability.insert(1, oppvalue1)
+    else:
+        oppvalue1 = opponentProbability[1]
+        oppvalue1 = oppvalue1 + 0
+        del opponentProbability[1]
+        opponentProbability.insert(1, oppvalue1)
+    
+    # search to see if the current hand is in a set
+    if hand in hasSet(4, hand):
+        oppvalue2 = opponentProbability[2]
+        oppvalue2 = oppvalue2 + 1
+        del opponentProbability[2]
+        opponentProbability.insert(2, oppvalue2)
+    else:
+        oppvalue2 = opponentProbability[2]
+        oppvalue2 = oppvalue2 + 0
+        del opponentProbability[2]
+        opponentProbability.insert(2, oppvalue2)
+    
+    # search to see if the current hand is in a set
+    if hand in (hasSet(3, hand) and hasSet(2, hand)):
+        oppvalue3 = opponentProbability[3]
+        oppvalue3 = oppvalue3 + 1
+        del opponentProbability[3]
+        opponentProbability.insert(3, oppvalue3)
+    else:
+        oppvalue3 = opponentProbability[3]
+        oppvalue3 = oppvalue3 + 0
+        del opponentProbability[3]
+        opponentProbability.insert(3, oppvalue3)
+    
+    # search to see if the current hand is in a flush
+    if hand in isFlush(hand):
+        oppvalue4 = opponentProbability[4]
+        oppvalue4 = oppvalue4 + 1
+        del opponentProbability[4]
+        opponentProbability.insert(4, oppvalue4)
+    else:
+        oppvalue4 = opponentProbability[4]
+        oppvalue4 = oppvalue4 + 0
+        del opponentProbability[4]
+        opponentProbability.insert(4, oppvalue4)
+    
+    # search to see if the current hand is in a straight
+    if hand in isStraight(hand):
+        oppvalue5 = opponentProbability[5]
+        oppvalue5 = oppvalue5 + 1
+        del opponentProbability[5]
+        opponentProbability.insert(5, oppvalue5)
+    else:
+        oppvalue5 = opponentProbability[5]
+        oppvalue5 = oppvalue5 + 0
+        del opponentProbability[5]
+        opponentProbability.insert(5, oppvalue5)
+    
+    # search to see if the current hand is in a set
+    if hand in hasSet(3,hand):
+        oppvalue6 = opponentProbability[6]
+        oppvalue6 = oppvalue6 + 1
+        del opponentProbability[6]
+        opponentProbability.insert(6, oppvalue6)
+    else:
+        oppvalue6 = opponentProbability[6]
+        oppvalue6 = oppvalue6 + 0
+        del opponentProbability[6]
+        opponentProbability.insert(6, oppvalue6)
+    
+    # search to see if the current hand is in a two pair
+    if hand in hasTwoPair(hand):
+        oppvalue7 = opponentProbability[7]
+        oppvalue7 = oppvalue7 + 1
+        del opponentProbability[7]
+        opponentProbability.insert(7, oppvalue7)
+    else:
+        oppvalue7 = opponentProbability[7]
+        oppvalue7 = oppvalue7 + 0
+        del opponentProbability[7]
+        opponentProbability.insert(7, oppvalue7)
+    
+    # search to see if the current hand is in a set
+    if hand in hasSet(2,hand):
+        oppvalue8 = opponentProbability[8]
+        oppvalue8 = oppvalue8 + 1
+        del opponentProbability[8]
+        opponentProbability.insert(8, oppvalue8)
+    else:
+        oppvalue8 = opponentProbability[8]
+        oppvalue8 = oppvalue8 + 0
+        del opponentProbability[8]
+        opponentProbability.insert(8, oppvalue8)
+    return opponentProbability
+
 # Player stay/fold
 def stay(player_index):
 	global actions
@@ -71,9 +311,6 @@ def stay(player_index):
 	else:
 		playStr = "Opponent "
 	# If someone else raised, this player is folding
-	#   Technically if they fold, I believe they don't get to see the winner's 
-	#   hand (unless of course there is more than one player left, etc) so
-	#   catching bluffs might not be that easy with that limitation
 	if 'raised' in actions:
 		inHand[player_index] = False
 		print playStr + " has folded"
@@ -81,7 +318,6 @@ def stay(player_index):
 	else:
 		actions.insert(player_index,'stayed')
 		print playStr + "has stayed"
-
 
 # Player raise
 def raised(player_index):
@@ -98,11 +334,37 @@ def raised(player_index):
 			playStr = "Agent "
 		else:
 			playStr = "Opponent "
-
+        
 		print playStr + "has raised"
 	# if they ran out of money to raise, they stay an all other players stay
 	else:
 		stay(player_index)
+
+# Comparison of the probabilities - determines what move the agent should make after the opponent(s) play
+agentProbabilityList = []
+opponentProbabilityList = []
+
+def agentStrategy():
+    agentProbabilityList = agentProb(hand)
+    opponentProbabilityList = opponentProb(hand)
+    # if the opponent has raised then we will assume the opponent has one of the better hands
+    if (player_index != 0):
+        if raised(player_index):
+            # determine the opponents best probable handrank
+            omaxProbability = max(opponentProbabilityList)
+            bestOpponentHandRank = opponentProbabilityList.index(omaxProbability)
+            
+            # compare that hand rank to the agents best hand rank
+            amaxProbability = max(agentProbabilityList)
+            bestAgentHandRank = agentProbabilityList.index(amaxProbability)
+            # if the opponents hand rank is better then fold or stay
+            if (bestOpponentHandRank < bestAgentHandRank):
+                stay(0) # make the agent stay
+            else:
+                raised(0)
+        else:
+        # make the opponent play first
+        startOpponent(index)
 
 # Remove players from list if they have run out of money
 def checkPlayers():
@@ -124,32 +386,40 @@ def startOpponent(index):
 	else:
 		playStr = "Opponent"
 	rank = handRank(players[index])
-	# Raise if hand is a straight or better
-	if rank < 6:
-		raised(index)
-	else:
-		stay(index)
+    # pick strategy for this entire game
+    opponentStrategy = random.randrange(1,2)
+    if (opponentStrategy == 1):
+        # Raise if hand is a straight or better
+        if rank < 6:
+            raised(index)
+        else:
+            stay(index)
+#elif (opponentStrategy == 2):
+        
+
 
 # Start agent
 def startAgent():
 	global actions
 	index = 0
 	rank = handRank(players[index])
+    agentProb(hand)
+    opponentProb(hand)      # must be changed to the visible cards
 	playStr = ""
 	if index == 0:
 		playStr = "Agent"
 	else:
 		playStr = "Opponent"
 	# How good is your hand?
-	if   (not 'raised' in actions) and (rank < 5):
-		raised(index)
+        #if   (not 'raised' in actions) and (rank < 5):
+            #raised(index)
 	# Did the opponents raise?
-	elif 'raised' in actions:
+        #elif 'raised' in actions:
 		# Agent has better than a pair, raise
-		if rank < 8:
-			raised(index)
-	else:
-		stay(index)
+            #if rank < 8:
+#raised(index)
+        #else:
+#stay(index)
 
 # The cards after the first card are all visible to all players
 def visibleCards(player):
@@ -171,8 +441,6 @@ def handRank(hand):
 # Remember function (don't know if we still need this)
 def remember():
 	knowledgeBaseActions.append(actions)
-	knowledgeBaseHands.append(players)
-	knowledgeBaseWinners.append(winners)
 
 # Start game function
 def startGame():
@@ -226,10 +494,10 @@ def isStraight(hand):
 	# Look for specific case where the Ace is a low Ace (a "1", let's say)
 	#   (instead of the usual high Ace, what would be a "14")
 	if (('A' in values) and ('2' in values) and ('3' in values)
-						and ('4' in values) and ('5' in values)):
+        and ('4' in values) and ('5' in values)):
 		return True
 	else:
-		# Pick out the low card and create a list, starting from the low card's 
+		# Pick out the low card and create a list, starting from the low card's
 		#   index until you reach 5
 		low = vals.index(lowCard(hand))
 		rangeUp = range(low,low + 5)
@@ -253,7 +521,7 @@ def isStraightFlush(hand):
 		values = sortCards(values)
 		return values
 
-# Find the sets of a hand and return a sorted list with the number of 
+# Find the sets of a hand and return a sorted list with the number of
 #   occurances of each card
 def sets(hand):
 	amountsVals = {}
@@ -267,8 +535,8 @@ def sets(hand):
 	valueSets.sort()
 	return valueSets
 
-# Find the sets of a hand and return an unsorted list with the number of 
-#   occurances of each card (for when I want to know which card value had what 
+# Find the sets of a hand and return an unsorted list with the number of
+#   occurances of each card (for when I want to know which card value had what
 #   number of occurances)
 def unsortedSets(hand):
 	amountsVals = {}
@@ -281,7 +549,7 @@ def unsortedSets(hand):
 		valueSets.append(amountsVals[item])
 	return valueSets
 
-# Determine if given hand has a set of given size 
+# Determine if given hand has a set of given size
 #  (if first argument is 2, will return true if the hand has a pair, etc)
 def hasSet(numberOfSame, hand):
 	if (numberOfSame in sets(hand)):
@@ -342,7 +610,7 @@ def fourthHighestCard(hand):
 	return values[-4]
 
 # Determine what player has the better straight
-#   You really only need to know that 1) they both have straights and 2) the 
+#   You really only need to know that 1) they both have straights and 2) the
 #   high card for each straight
 def bestStraight():
 	# Not using this right now
@@ -537,17 +805,17 @@ def bestTwoPair():
 		playerTwosSingle = sets2.index(1)
 	else:
 		return 5
-	# If either of player ones sets bests all of player twos sets, 
+	# If either of player ones sets bests all of player twos sets,
 	#   they've the best two pair
-	if 	((playerOnesSet > playerTwosSet) or (playerOnesSet > playerTwosPair) 
-										or (playerOnesPair > playerTwosSet) 
-										or (playerOnesPair > playerTwosPair)):
+	if 	((playerOnesSet > playerTwosSet) or (playerOnesSet > playerTwosPair)
+         or (playerOnesPair > playerTwosSet)
+         or (playerOnesPair > playerTwosPair)):
 		return 0
-	# If either of player twos sets bests all of player ones sets, 
+	# If either of player twos sets bests all of player ones sets,
 	#   they've the best two pair
-	if 	((playerOnesSet < playerTwosSet) or (playerOnesSet < playerTwosPair) 
-										or (playerOnesPair < playerTwosSet) 
-										or (playerOnesPair < playerTwosPair)):
+	if 	((playerOnesSet < playerTwosSet) or (playerOnesSet < playerTwosPair)
+         or (playerOnesPair < playerTwosSet)
+         or (playerOnesPair < playerTwosPair)):
 		return 1
 	# Otherwise, compare their kickers (the non-pair card)
 	else:
@@ -624,7 +892,6 @@ def whoWonTheyWon(winner):
 		playStr = "Agent"
 	else:
 		playStr = "Opponent"
-	winners.append(playersWithBestHand[0])
 	print playStr + " was the only one left in the hand." + playStr + " has won the hand"
 
 # Determine who won this hand, and divvy up the pot accordingly
@@ -685,7 +952,6 @@ def whoWon():
 	if bestHand == 9: hand = "high card"
 	# Split the pot amongst the players with the best hand
 	payOut = pot/len(playersWithBestHand)
-	winners.append(playersWithBestHand)
 	for player in playersWithBestHand:
 		players_money[player] += payOut
 		if len(playersWithBestHand) == 1:
@@ -696,18 +962,18 @@ def whoWon():
 				playStr = "Opponent"
 			print playStr + " has won the hand with a " + hand
 		else:
-			# Leaving this stuff in for now (aka, in case there are more 
+			# Leaving this stuff in for now (aka, in case there are more
 			#   opponents)
 			"""
-			winners = ""
-			for player in playersWithBestHand:
+                winners = ""
+                for player in playersWithBestHand:
 				playStr = ""
 				if player == 0:
-					playStr = "Agent"
+                playStr = "Agent"
 				else:
-					playStr = "Opponent"
+                playStr = "Opponent"
 				winners += playStr
-			"""
+                """
 			print "Agent and Opponent each have a " + hand + " and have split the pot evenly"
 
 # Figure out is over (check how many players are left in the game)
@@ -786,7 +1052,7 @@ def compareSameHands(rank):
 			return random.randint(0,1)
 		else:
 			return hc
-	
+
 # In the first round, deal two cards to each player, the first is hidden to all other players
 #  the subsequent cards are all visible to all players
 #  In all other rounds, deal one card to each player (visible)
@@ -880,3 +1146,4 @@ def finishHand():
 	print players_money
 
 startGame()
+
